@@ -1,0 +1,26 @@
+{
+  "autoload": {
+    "psr-4": {
+      "adz\\": "src/"
+    }
+  },
+  "name": "adz/wp-plugin",
+  "description": "WP plugin boilerplate",
+  "authors": [{
+    "name": "Adrian T. Saycon",
+    "email": "adzbite@gmail.com"
+  }],
+  "scripts": {
+    "post-install-cmd": [
+      "sh adz.sh"
+    ]
+  },
+  "minimum-stability": "dev",
+  "repositories": [{
+    "type": "path",
+    "url": "./adz"
+  }],
+  "require": {
+    "adz/adz": "*"
+  }
+}

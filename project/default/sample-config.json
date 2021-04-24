@@ -1,0 +1,22 @@
+{
+  "id": "adz-toolbox",
+  "name": "Adz Toolbox",
+  "text-domain": "adz-toolbox",
+  "slug": "adz-toolbox/adz-toolbox.php",
+  "dependencies": {
+    "wpie": {
+      "main-class-name": "\\wpie\\core\\WPIE_General",
+      "text-domain": "wp-import-export-lite",
+      "name": "WP Import Export Lite",
+      "slug": "wp-import-export-lite/wp-import-export-lite.php",
+      "zip": "https://downloads.wordpress.org/plugin/wp-import-export-lite.zip"
+    },
+    "acf": {
+      "main-class-name": "ACF",
+      "text-domain": "advanced-custom-fields",
+      "name": "Advanced Custom Fields",
+      "slug": "advanced-custom-fields/acf.php",
+      "zip": "https://downloads.wordpress.org/plugin/advanced-custom-fields.5.9.5.zip"
+    }
+  }
+}

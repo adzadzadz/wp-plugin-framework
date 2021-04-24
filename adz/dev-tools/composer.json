@@ -1,0 +1,18 @@
+{
+  "autoload": {
+    "psr-4": {
+      "adzJS\\": "js/",
+      "AdzWP\\": "wp/"
+    }
+  },
+  "name": "adz/dev-tools",
+  "description": "I had enough! This is OPERATION CWAL!.",
+  "authors": [{
+    "name": "Adrian T. Saycon",
+    "email": "adrian.saycon.t@gmail.com"
+  }],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.4.0"
+  }
+}

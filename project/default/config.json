@@ -1,0 +1,9 @@
+{
+  "id": "adz-plugin",
+  "name": "Adz Plugin",
+  "text-domain": "adz-plugin",
+  "slug": "adz-plugin/adz-plugin.php",
+  "dependencies": {
+
+  }
+}

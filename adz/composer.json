@@ -1,0 +1,22 @@
+{
+  "autoload": {
+    "psr-4": {
+      "AdzHive\\": "dev-tools/hive/",
+      "AdzWP\\": "dev-tools/wp/"
+    },
+    "classmap": [
+      "./ADZ.php"
+    ]
+  },
+  "name": "adz/adz",
+  "description": "I had enough! This is OPERATION CWAL!.",
+  "authors": [{
+    "name": "Adrian T. Saycon",
+    "email": "adrian.saycon.t@gmail.com"
+  }],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.4.0",
+    "asana/asana": "^0.10.0"
+  }
+}
