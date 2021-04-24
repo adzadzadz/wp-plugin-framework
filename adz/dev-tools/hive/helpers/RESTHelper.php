@@ -2,13 +2,26 @@
 
 namespace AdzHive\helpers;
 
-class RESTApiHelper extends \AdzHive\Adz {
+class RESTHelper extends \AdzHive\Adz {
 
-  public static function getREST(String $url, Array $data = []) {
+  public $type = 'json';
+
+  public $client;
+
+  public $url;
+
+  public $data;
+
+  public $result;
+
+  public $options = [];
+  
+  public function init()
+  {
     $curl = \curl_init();
  
-    if ($data)
-      $url = sprintf("%s?%s", $url, http_build_query($data));
+    if ($this->data)
+      $url = sprintf("%s?%s", $this->url, http_build_query($this->data));
  
     // OPTIONS:
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -23,7 +36,34 @@ class RESTApiHelper extends \AdzHive\Adz {
     if(!$result) 
       die("Connection Failure");
     curl_close($curl);
-    return $result;
+    $this->client = $result;
+  }
+
+ public function option()
+ {
+
  }
+
+ public function delete()
+ {
+
+ }
+
+ public function post()
+ {
+
+ }
+
+ public function put()
+ {
+   
+ }
+
+ public function update()
+ {
+
+ }
+
+
 
 }
