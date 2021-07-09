@@ -1,5 +1,5 @@
-#WP Plugin Framework
+# WP Plugin Framework
 My personal attempt to simplify wp plugin development.
 
-##Features
-TBD
+## Features
+### TBD
