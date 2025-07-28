@@ -7,9 +7,17 @@ use AdzWP\View;
 
 class AdminController extends Controller {
 
-  public function init()
+  public $actions = [
+    'admin_menu' => [
+      'callback' => 'setMenu',
+      'priority' => 9999
+    ],
+    'admin_enqueue_scripts' => 'enqueueAdminAssets'
+  ];
+  
+  protected function bootstrap()
   {
-    add_action( 'admin_menu', [ $this, 'setMenu' ], 9999 );
+    // Additional initialization if needed
   }
 
   public function setMenu()
@@ -25,6 +33,28 @@ class AdminController extends Controller {
     }
 
     echo View::render('admin/dashboard');
+  }
+  
+  public function actionHelper()
+  {
+    if ( !current_user_can( 'manage_options' ) )  {
+      wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+    }
+    
+    echo View::render('admin/dashboard');
+  }
+  
+  public function enqueueAdminAssets($hook)
+  {
+    if (strpos($hook, 'adz-toolbox-menu') !== false) {
+      wp_enqueue_style('adz-admin-css', ADZ_PLUGIN_URL . 'src/assets/css/main.css', [], ADZ_PLUGIN_VERSION);
+      wp_enqueue_script('adz-admin-js', ADZ_PLUGIN_URL . 'src/assets/js/main.js', ['jquery'], ADZ_PLUGIN_VERSION, true);
+      
+      wp_localize_script('adz-admin-js', 'adz_ajax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('adz-ajax-nonce')
+      ]);
+    }
   }
 
 }
