@@ -1,7 +1,0 @@
-{
-  "packageName" : "asana",
-  "templateDir": "swagger_templates",
-  "packagePath": "Asana",
-  "srcBasePath": "Resources",
-  "hideGenerationTimestamp": true
-}
