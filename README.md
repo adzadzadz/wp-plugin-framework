@@ -213,9 +213,13 @@ class CustomPost extends Model
 
 ## 📚 Documentation & Support
 
-- **[Quick Start Guide](stubs/)** - Get building immediately
-- **[API Documentation](src/)** - Full framework reference
-- **[Example Plugin](stubs/project-files/)** - Complete working example
+- **[Complete Documentation](docs/)** - Comprehensive framework guide
+- **[Quick Start Guide](docs/getting-started.md)** - Get building immediately
+- **[API Reference](docs/api/core.md)** - Full framework reference
+- **[Plugin Lifecycle](docs/PLUGIN_LIFECYCLE.md)** - Install/uninstall hooks
+- **[Dependency Management](docs/dependency-management.md)** - Automatic plugin installation
+- **[Controllers Guide](docs/controllers.md)** - MVC controller patterns
+- **[First Plugin Tutorial](docs/examples/first-plugin.md)** - Complete working example
 - **[Unit Tests](tests/)** - 61 tests, 85 assertions, 100% pass rate
 
 ## 🔧 Requirements
