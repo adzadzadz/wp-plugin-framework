@@ -1,6 +1,6 @@
 <?php 
 
-namespace AdzHive;
+namespace AdzWP;
 
 abstract class Core extends Adz {
 

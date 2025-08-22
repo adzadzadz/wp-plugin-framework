@@ -3,7 +3,7 @@
 namespace AdzWP;
 
 use ADZ;
-use AdzWP\Plugin;
+use AdzFramework\WordPress\Plugin;
 
 class Dependency extends Core {
 

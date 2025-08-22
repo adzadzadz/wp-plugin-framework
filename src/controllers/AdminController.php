@@ -2,7 +2,7 @@
 
 namespace adz\controllers;
 
-use AdzWP\Controller;
+use AdzWP\WordPressController as Controller;
 
 class AdminController extends Controller {
 

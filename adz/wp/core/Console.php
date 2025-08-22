@@ -1,6 +1,6 @@
 <?php
 
-namespace AdzHive;
+namespace AdzWP;
 
 /**
  * CLI Console Helper for development tools
@@ -315,7 +315,7 @@ class Console
 
 namespace {$namespace}\\Controllers;
 
-use AdzWP\\Controller;
+use AdzFramework\WordPress\\Controller;
 
 class {$className} extends Controller 
 {
@@ -344,7 +344,7 @@ class {$className} extends Controller
 
 namespace {$namespace}\\Models;
 
-use AdzHive\\Database;
+use AdzFramework\Core\\Database;
 
 class {$className}
 {
@@ -393,7 +393,7 @@ class {$className}
     {
         return "<?php
 
-use AdzHive\\Database;
+use AdzFramework\Core\\Database;
 
 // Migration: {$name}
 

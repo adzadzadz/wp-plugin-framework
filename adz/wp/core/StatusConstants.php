@@ -1,5 +1,5 @@
 <?php 
-namespace AdzHive;
+namespace AdzWP;
 
 class StatusConstants {
 

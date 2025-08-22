@@ -1,5 +1,5 @@
 <?php 
-namespace AdzHive;
+namespace AdzWP;
 
 /**
  * Base class for adz/dev-tools

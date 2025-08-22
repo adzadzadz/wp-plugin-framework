@@ -2,7 +2,7 @@
 
 namespace AdzWP;
 
-class Controller extends \AdzHive\Controller {
+class WordPressController extends Controller {
 
     public $filters = [];
     public $actions = [];

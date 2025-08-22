@@ -1,6 +1,6 @@
 <?php 
 
-namespace AdzHive;
+namespace AdzWP;
 
 use \ADZ;
 

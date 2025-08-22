@@ -12,11 +12,10 @@
   "autoload": {
     "psr-4": {
       "adz\\": "src/",
-      "AdzWP\\": "adz/dev-tools/wp/",
-      "AdzHive\\": "adz/dev-tools/hive/"
+      "AdzWP\\": "adz/wp/"
     },
     "files": [
-      "adz/dev-tools/hive/helpers/functions.php"
+      "adz/wp/helpers/functions.php"
     ]
   },
   "autoload-dev": {
