@@ -78,7 +78,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
         }
         
         // Create a generic controller mock
-        return new class extends \AdzWP\Controller {
+        return new class extends \Adz\WP\Controller {
             public $actions = [
                 'init' => 'testInit'
             ];
@@ -102,7 +102,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
      */
     protected function createMockModel(): object
     {
-        return new class extends \AdzHive\Model {
+        return new class extends \Adz\WP\Model {
             protected $data = [];
             
             public function getData($key = null) {
@@ -123,7 +123,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
     /**
      * Create a mock config instance
      */
-    protected function createMockConfig(array $config = []): \AdzHive\Config
+    protected function createMockConfig(array $config = []): \Adz\WP\Config
     {
         $defaultConfig = [
             'plugin' => [
@@ -142,7 +142,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
             ]
         ];
         
-        $mockConfig = $this->getMockBuilder(\AdzHive\Config::class)
+        $mockConfig = $this->getMockBuilder(\Adz\WP\Config::class)
                           ->disableOriginalConstructor()
                           ->getMock();
                           
@@ -211,7 +211,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
     /**
      * Assert that config value can be retrieved
      */
-    protected function assertConfigValueAccessible(\AdzHive\Config $config, string $key): void
+    protected function assertConfigValueAccessible(\Adz\WP\Config $config, string $key): void
     {
         $value = $config->get($key);
         $this->assertNotNull($value, "Config key '{$key}' returned null");

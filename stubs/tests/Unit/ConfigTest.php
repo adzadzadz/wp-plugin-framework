@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\Helpers\FrameworkTestCase;
-use AdzHive\Config;
+use Adz\WP\Config;
 
 /**
  * Unit tests for the Config class

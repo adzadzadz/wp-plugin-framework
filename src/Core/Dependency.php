@@ -3,7 +3,6 @@
 namespace Adz\WP;
 
 use ADZ;
-use AdzFramework\WP\Plugin;
 
 class Dependency extends Core {
 
@@ -12,7 +11,7 @@ class Dependency extends Core {
     $name = ADZ::$conf->name;
     add_action( 'admin_notices', function() use( $name, $depName )
     {
-      echo \AdzWP\View::render("dependency/admin_notices", [
+      echo \Adz\WP\View::render("dependency/admin_notices", [
         "dependency" => $depName,
         "name" => $name
       ]);

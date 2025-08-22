@@ -5,6 +5,8 @@ namespace Adz\WP;
 abstract class Core extends Adz {
 
   protected $container = [];
+
+  public $pluginPath;
   
   public function init()
   {
@@ -81,11 +83,5 @@ abstract class Core extends Adz {
   {
     return $this->container[$key] ?? $default;
   }
-
-}
-
-class WordPressCore extends \AdzHive\Core {
-
-  public $pluginPath;
 
 }

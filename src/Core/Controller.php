@@ -4,11 +4,6 @@ namespace Adz\WP;
 
 class Controller extends Core {
 
-
-}
-
-class WordPressController extends Controller {
-
     public $filters = [];
     public $actions = [];
 

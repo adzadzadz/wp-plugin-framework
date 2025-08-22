@@ -207,8 +207,8 @@ class FrameworkIntegrationTest extends FrameworkTestCase
         $config = $this->createMockConfig();
         
         // Test that all components work together
-        $this->assertInstanceOf('AdzWP\Controller', $controller);
-        $this->assertInstanceOf('AdzHive\Config', $config);
+        $this->assertInstanceOf('Adz\WP\Controller', $controller);
+        $this->assertInstanceOf('Adz\WP\Config', $config);
         
         // Test configuration access from controller context
         $testValue = $config->get('plugin.name', 'fallback');

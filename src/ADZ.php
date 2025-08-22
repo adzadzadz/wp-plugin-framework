@@ -1,7 +1,5 @@
 <?php 
 
-namespace Adz\WP;
-
 class ADZ {
 
   public static $env;

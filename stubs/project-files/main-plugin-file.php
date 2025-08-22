@@ -26,4 +26,4 @@ define('YOUR_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once YOUR_PLUGIN_PATH . 'vendor/autoload.php';
 
 // Initialize the plugin
-\Adz\Core\ADZ::pluginize(__FILE__, 'default');
+\Adz\WP\ADZ::pluginize(__FILE__, 'default');

@@ -17,7 +17,3 @@ class View extends Core {
   }
 
 }
-
-class WordPressView extends \AdzHive\View {
-
-}
