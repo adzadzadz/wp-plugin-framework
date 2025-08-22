@@ -17,7 +17,7 @@ This framework is for developers who:
 
 ```bash
 # Install via Composer (FASTEST)
-composer create-project adz/wp-plugin-framework my-awesome-plugin
+composer create-project adzadzadz/wp-plugin-framework my-awesome-plugin
 
 # Start coding IMMEDIATELY
 cd my-awesome-plugin
@@ -240,7 +240,7 @@ class CustomPost extends Model
 
 ```bash
 # Operation CWAL - Deploy immediately!
-composer create-project adz/wp-plugin-framework my-plugin
+composer create-project adzadzadz/wp-plugin-framework my-plugin
 cd my-plugin
 # Start building your WordPress plugin empire! 🚀
 ```

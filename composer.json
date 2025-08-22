@@ -1,5 +1,5 @@
 {
-    "name": "adz/wp-plugin-framework",
+    "name": "adzadzadz/wp-plugin-framework",
     "description": "The intuitive MVC framework for WordPress plugin development",
     "type": "library",
     "keywords": [
@@ -10,7 +10,7 @@
         "development",
         "php"
     ],
-    "homepage": "https://github.com/adz/wp-plugin-framework",
+    "homepage": "https://github.com/adzadzadz/wp-plugin-framework",
     "license": "GPL-2.0-or-later",
     "authors": [
         {
@@ -49,8 +49,8 @@
         "test:coverage": "phpunit --coverage-html coverage"
     },
     "support": {
-        "issues": "https://github.com/adz/wp-plugin-framework/issues",
-        "source": "https://github.com/adz/wp-plugin-framework"
+        "issues": "https://github.com/adzadzadz/wp-plugin-framework/issues",
+        "source": "https://github.com/adzadzadz/wp-plugin-framework"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
