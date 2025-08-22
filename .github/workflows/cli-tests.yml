@@ -1,0 +1,71 @@
+name: CLI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  cli-tests:
+    name: CLI Tool Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+        
+    - name: Install dependencies
+      run: composer install --no-dev --prefer-dist
+        
+    - name: Make CLI executable
+      run: chmod +x ./bin/adz
+      
+    - name: Test CLI help command
+      run: ./bin/adz --help
+      
+    - name: Test CLI in isolated environment
+      run: |
+        mkdir -p /tmp/test-cli
+        cd /tmp/test-cli
+        
+        # Create a mock composer.json to simulate installed framework
+        mkdir -p vendor/adz/wp-plugin-framework
+        cp -r $GITHUB_WORKSPACE/* vendor/adz/wp-plugin-framework/
+        
+        # Test init command
+        echo "Testing adz init command..."
+        echo "y" | vendor/adz/wp-plugin-framework/bin/adz init
+        
+        # Verify created structure
+        [ -d "src/controllers" ] || exit 1
+        [ -d "src/models" ] || exit 1
+        [ -d "src/views" ] || exit 1
+        [ -f "composer.json" ] || exit 1
+        [ -f "main-plugin.php" ] || exit 1
+        
+        echo "CLI initialization test passed!"
+        
+    - name: Test code generation commands
+      run: |
+        cd /tmp/test-cli
+        
+        # Test controller generation
+        vendor/adz/wp-plugin-framework/bin/adz make:controller TestController
+        [ -f "src/controllers/TestController.php" ] || exit 1
+        
+        # Test model generation
+        vendor/adz/wp-plugin-framework/bin/adz make:model TestModel
+        [ -f "src/models/TestModel.php" ] || exit 1
+        
+        # Test view generation
+        vendor/adz/wp-plugin-framework/bin/adz make:view test-view
+        [ -f "src/views/test-view.php" ] || exit 1
+        
+        echo "Code generation tests passed!"

@@ -19,6 +19,9 @@
         <testsuite name="Integration">
             <directory suffix="Test.php">./tests/Integration</directory>
         </testsuite>
+        <testsuite name="WordPress">
+            <directory suffix="Test.php">./tests/WordPress</directory>
+        </testsuite>
     </testsuites>
     
     <coverage cacheDirectory=".phpunit.cache/code-coverage"
@@ -26,12 +29,5 @@
         <include>
             <directory suffix=".php">./src</directory>
         </include>
-        <exclude>
-            <directory suffix=".php">./stubs</directory>
-        </exclude>
-        <report>
-            <html outputDirectory="coverage" lowUpperBound="50" highLowerBound="80"/>
-            <xml outputDirectory="coverage"/>
-        </report>
     </coverage>
 </phpunit>

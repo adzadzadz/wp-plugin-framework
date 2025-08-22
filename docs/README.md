@@ -1,84 +1,82 @@
-# ADZ Plugin Framework Documentation
+# ADZ WordPress Plugin Framework Documentation
 
-Welcome to the comprehensive documentation for the ADZ Plugin Framework - a modern, secure, and developer-friendly WordPress plugin development framework.
+Welcome to the ADZ WordPress Plugin Framework documentation. This framework provides a modern, structured approach to WordPress plugin development with MVC architecture, dependency management, and comprehensive plugin lifecycle support.
 
-## Table of Contents
+## 📚 Documentation Index
 
 ### Getting Started
-- [Installation & Setup](installation.md)
-- [Quick Start Guide](getting-started.md)
-- [Your First Plugin](first-plugin.md)
-- [Framework Architecture](architecture.md)
+- [Quick Start Guide](getting-started.md) - Get up and running in minutes
+- [Installation](installation.md) - Installation and setup instructions
+- [Framework Architecture](architecture.md) - Understanding the framework structure
 
 ### Core Features
-- [Hook Management System](features/hooks.md)
-- [Configuration Management](features/configuration.md)
-- [Error Handling & Logging](features/logging.md)
-- [Security & Validation](features/security.md)
-- [Database Operations](features/database.md)
-- [REST API Integration](features/rest-api.md)
+- [Plugin Lifecycle Management](PLUGIN_LIFECYCLE.md) - Install, activate, deactivate, uninstall hooks
+- [Controllers](controllers.md) - MVC controller system with automatic hook registration
+- [Models & Database](models-database.md) - Database abstraction and ORM-like functionality
+- [Views & Templates](views.md) - Template system and view rendering
+- [Configuration](configuration.md) - Configuration management system
 
-### Development Guides
-- [Creating Controllers](guides/controllers.md)
-- [Working with Models](guides/models.md)
-- [Form Handling](guides/forms.md)
-- [AJAX Implementation](guides/ajax.md)
-- [Asset Management](guides/assets.md)
-- [Internationalization](guides/i18n.md)
-
-### CLI Tools
-- [Command Overview](cli/overview.md)
-- [Code Generators](cli/generators.md)
-- [Database Management](cli/database.md)
-- [Maintenance Commands](cli/maintenance.md)
+### Advanced Features
+- [Dependency Management](dependency-management.md) - Automatic plugin dependency installation
+- [Security](security.md) - Security features and best practices
+- [Testing](testing.md) - Unit testing and integration testing
+- [Console Commands](console.md) - CLI commands and scaffolding tools
 
 ### API Reference
-- [Core Classes](api/core.md)
-- [Helper Functions](api/helpers.md)
-- [Configuration Options](api/config.md)
-- [Validation Rules](api/validation.md)
+- [Core Classes](api/core.md) - Core framework classes
+- [Helper Functions](api/helpers.md) - Utility and helper functions
+- [Traits](api/traits.md) - Reusable traits and behaviors
 
-### Examples
-- [Basic CRUD Operations](examples/crud.md)
-- [API Integration Service](examples/api-service.md)
-- [Custom Admin Pages](examples/admin-pages.md)
-- [Frontend Components](examples/frontend.md)
+### Examples & Tutorials
+- [Building Your First Plugin](examples/first-plugin.md) - Step-by-step tutorial
+- [Advanced Plugin Examples](examples/advanced.md) - Complex plugin scenarios
+- [Migration Guide](migration.md) - Migrating from other frameworks
 
-### Advanced Topics
-- [Custom Middleware](advanced/middleware.md)
-- [Plugin Extensions](advanced/extensions.md)
-- [Performance Optimization](advanced/performance.md)
-- [Testing Your Plugin](advanced/testing.md)
+## 🚀 Quick Example
 
-### Migration & Troubleshooting
-- [Migrating from Standard WordPress Plugins](migration.md)
-- [Troubleshooting Guide](troubleshooting.md)
-- [FAQ](faq.md)
-- [Best Practices](best-practices.md)
+```php
+<?php
+// main-plugin-file.php
 
-## Framework Philosophy
+// Initialize framework
+$pluginManager = \AdzWP\Core\PluginManager::getInstance(__FILE__);
 
-The ADZ Plugin Framework is built on these core principles:
+// Set up lifecycle hooks
+$pluginManager
+    ->onActivate(function() {
+        // Create tables, set options
+    })
+    ->onDeactivate(function() {
+        // Cleanup tasks
+    })
+    ->setupOptions(['my_setting' => 'default'])
+    ->setupCapabilities(['manage_my_plugin']);
 
-1. **Security First** - Built-in protection against common vulnerabilities
-2. **Developer Experience** - Intuitive APIs and comprehensive tooling
-3. **WordPress Native** - Full integration with WordPress conventions
-4. **Modern PHP** - Following current PHP and PSR standards
-5. **Maintainable Code** - Clear structure and separation of concerns
+// Initialize controllers
+new App\Controllers\ExampleController();
+```
 
-## Quick Links
+## 🔧 Framework Features
 
-- [Installation Guide](installation.md) - Get up and running in minutes
-- [API Quick Reference](api/quick-reference.md) - Essential functions and methods
-- [Code Examples](examples/) - Real-world implementation patterns
-- [Troubleshooting](troubleshooting.md) - Solutions to common issues
+- **MVC Architecture** - Clean separation of concerns
+- **Automatic Hook Registration** - Declarative hook management
+- **Plugin Lifecycle Management** - Complete install/uninstall workflow
+- **Dependency Management** - Automatic plugin installation
+- **Database Abstraction** - Eloquent-style query builder
+- **Security Features** - Built-in sanitization and validation
+- **Testing Framework** - PHPUnit integration with WordPress mocking
+- **CLI Tools** - Code generation and scaffolding
 
-## Community
+## 📋 Requirements
 
-- **GitHub**: Submit issues and contribute
-- **Documentation**: This comprehensive guide
-- **Examples**: Working code samples in the `/examples` directory
+- WordPress 5.0+
+- PHP 7.4+
+- Composer
 
----
+## 🤝 Contributing
 
-*This documentation covers ADZ Plugin Framework v2.0 and later.*
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines.
+
+## 📄 License
+
+This framework is licensed under the [GPL v2 or later](../LICENSE).

@@ -1,135 +1,104 @@
 # Framework Architecture
 
-Understanding the ADZ Plugin Framework architecture will help you build better, more maintainable WordPress plugins. This guide explains the core concepts, design patterns, and structure.
+The ADZ WordPress Plugin Framework follows modern software architecture principles, providing a clean, maintainable foundation for WordPress plugin development.
 
-## Core Philosophy
+## Design Principles
 
-The framework is built on these architectural principles:
+### 1. MVC Pattern
+The framework implements a clear Model-View-Controller pattern:
+- **Models** handle data and business logic
+- **Views** manage presentation and templates  
+- **Controllers** coordinate between models and views
 
-1. **MVC Pattern** - Separation of concerns with Controllers, Models, and Views
-2. **Dependency Injection** - Loose coupling and better testability
-3. **Configuration-Driven** - Behavior controlled through configuration files
-4. **Security-First** - Built-in protection mechanisms
-5. **WordPress Native** - Full integration with WordPress hooks and conventions
+### 2. Separation of Concerns
+Each component has a single, well-defined responsibility:
+- Core classes handle framework functionality
+- Database classes manage data persistence
+- Helper classes provide utility functions
+- Traits offer reusable behaviors
 
-## Framework Structure
+### 3. PSR-4 Autoloading
+Modern PHP namespacing and autoloading standards:
+```
+AdzWP\Core\*     - Core framework classes
+AdzWP\Db\*       - Database layer
+AdzWP\Helpers\*  - Utility functions
+AdzWP\Traits\*   - Reusable behaviors
+```
 
-### Directory Layout
+## Directory Structure
 
 ```
-wp-plugin-framework/
-├── adz/                        # Framework Core
-│   ├── dev-tools/
-│   │   ├── hive/              # Core Framework Classes
-│   │   │   ├── Core.php       # Base core class
-│   │   │   ├── Config.php     # Configuration management
-│   │   │   ├── Security.php   # Security utilities
-│   │   │   ├── Database.php   # Database abstraction
-│   │   │   ├── Log.php        # Logging system
-│   │   │   ├── Exception.php  # Custom exceptions
-│   │   │   ├── Validator.php  # Input validation
-│   │   │   ├── Console.php    # CLI commands
-│   │   │   └── helpers/       # Helper classes and functions
-│   │   └── wp/                # WordPress Integration
-│   │       ├── Controller.php # Base controller
-│   │       ├── Model.php      # Base model
-│   │       └── View.php       # View rendering
-├── src/                       # Your Plugin Code
-│   ├── controllers/           # Application controllers
-│   ├── models/               # Data models
-│   ├── views/                # Templates and views
-│   └── assets/               # CSS, JS, images
-├── config/                   # Configuration files
-├── docs/                     # Documentation
-└── vendor/                   # Composer dependencies
+src/
+├── AdzMain.php              # Global framework access point
+├── Core/                    # Core framework components
+│   ├── Config.php          # Configuration management
+│   ├── Controller.php      # Base controller class
+│   ├── Core.php            # Base core functionality
+│   ├── Dependency.php      # Plugin dependency management
+│   ├── Plugin.php          # Plugin lifecycle management
+│   ├── PluginManager.php   # Simplified plugin setup
+│   ├── Security.php        # Security utilities
+│   ├── View.php            # Template rendering
+│   └── ...
+├── Db/                      # Database abstraction layer
+│   ├── Connection.php      # Database connections
+│   ├── Model.php           # Base model class
+│   ├── QueryBuilder.php    # Fluent query interface
+│   ├── Schema.php          # Database schema management
+│   └── ...
+├── Helpers/                 # Utility classes
+│   ├── ArrayHelper.php     # Array manipulation
+│   ├── RESTHelper.php      # REST API utilities
+│   └── FrameworkHelper.php # Framework utilities
+└── Traits/                  # Reusable behaviors
+    ├── Behavior.php        # Base behavior trait
+    ├── Status.php          # Status management
+    └── Scenario.php        # Scenario handling
 ```
 
 ## Core Components
 
-### 1. Core Classes (`AdzHive` Namespace)
+### Global Access Point
 
-#### Core.php
-The foundation class that provides:
-- Automatic hook registration
-- Container for dependency injection
-- Bootstrap functionality
-- Base functionality for all framework components
+The `\Adz` class provides global access to framework functionality:
 
 ```php
-abstract class Core extends Adz {
-    protected $container = [];
+// Get configuration
+$config = \Adz::config();
+
+// Service resolution
+$service = \Adz::resolve('my-service');
+
+// Quick configuration access
+$value = \Adz::get('app.name', 'Default');
+```
+
+### Core Classes
+
+#### Base Core Class
+All framework classes extend the `Core` base class:
+
+```php
+abstract class Core
+{
+    protected $container = [];  // Service container
     
-    public function init() {
-        $this->registerHooks();
-        $this->bootstrap();
-    }
-    
-    protected function registerHooks() {
-        // Automatically registers $actions and $filters
-    }
+    public function init() { }  // Initialization hook
+    protected function registerHooks() { }  // WordPress hook registration
+    protected function bootstrap() { }  // Additional setup
 }
 ```
 
-#### Config.php
-Configuration management system:
-- Dot notation access (`config.get('database.prefix')`)
-- Environment variable support
-- Multiple configuration file loading
-- Default values and validation
-
-#### Security.php
-Security utilities including:
-- CSRF protection with nonces
-- Input validation and sanitization
-- Rate limiting
-- Capability checking
-- IP detection and client identification
-
-#### Validator.php
-Comprehensive input validation:
-- 20+ validation rules
-- Custom error messages
-- Database validation (unique, exists)
-- Nested validation with dot notation
-
-### 2. WordPress Integration (`AdzWP` Namespace)
-
-#### Controller.php
-Base controller class for WordPress integration:
-```php
-class Controller extends \AdzHive\Controller {
-    public $filters = [];  // WordPress filters
-    public $actions = [];  // WordPress actions
-}
-```
-
-#### Model.php
-Base model class for data operations:
-- Database integration
-- WordPress-specific functionality
-- Caching support
-
-#### View.php
-Template rendering system:
-- WordPress template hierarchy integration
-- Variable passing and escaping
-- Asset management
-
-## Design Patterns
-
-### 1. Hook Registration Pattern
-
-Instead of manually calling `add_action()` and `add_filter()`, define hooks declaratively:
+#### Controller System
+Controllers handle WordPress hooks declaratively:
 
 ```php
-class MyController extends Controller {
+class MyController extends Controller
+{
     public $actions = [
         'init' => 'initialize',
-        'admin_menu' => [
-            'callback' => 'addMenu',
-            'priority' => 10,
-            'accepted_args' => 1
-        ]
+        'wp_enqueue_scripts' => 'enqueueAssets'
     ];
     
     public $filters = [
@@ -138,266 +107,316 @@ class MyController extends Controller {
 }
 ```
 
-### 2. Configuration Pattern
-
-Centralized configuration management:
+#### Plugin Lifecycle
+Comprehensive plugin management:
 
 ```php
-// Access configuration
-$menuTitle = Config::getInstance()->get('admin.menu_title', 'Default');
-
-// Set configuration
-$config->set('custom.feature', true);
-
-// Environment variables
-$apiKey = $config->getEnv('API_KEY', 'default-key');
+$manager = PluginManager::getInstance(__FILE__);
+$manager
+    ->onActivate(function() { /* activation logic */ })
+    ->onDeactivate(function() { /* deactivation logic */ })
+    ->setDependencies([/* auto-install dependencies */]);
 ```
 
-### 3. Validation Pattern
+### Database Layer
 
-Consistent input validation:
-
-```php
-$validator = Validator::make($_POST, [
-    'email' => 'required|email',
-    'name' => 'required|string|min:3',
-    'age' => 'numeric|between:18,100'
-]);
-
-if ($validator->fails()) {
-    throw new ValidationException('Invalid input', $validator->errors());
-}
-```
-
-### 4. Database Pattern
-
-Fluent database operations:
+#### Query Builder
+Fluent database query interface:
 
 ```php
-$users = Database::getInstance()
-    ->table('users')
+$results = $this->queryBuilder()
+    ->select(['id', 'name', 'email'])
+    ->from('users')
     ->where('status', 'active')
-    ->where('created_at', '>', '2023-01-01')
-    ->orderBy('name')
+    ->orderBy('created_at', 'DESC')
     ->limit(10)
     ->get();
 ```
 
-### 5. Security Pattern
-
-Built-in security checks:
-
-```php
-// CSRF protection
-$security = Security::getInstance();
-$security->verifyRequest('_my_nonce', 'my_action');
-
-// Input sanitization
-$cleanData = $security->sanitizeArray($_POST, [
-    'email' => 'email',
-    'name' => 'text',
-    'content' => 'html'
-]);
-
-// Rate limiting
-$security->checkRateLimit('contact_form', 5, 300); // 5 attempts per 5 minutes
-```
-
-## Request Lifecycle
-
-### 1. Plugin Initialization
-```
-Plugin Loaded → Framework Bootstrap → Controllers Loaded → Hooks Registered
-```
-
-### 2. Request Processing
-```
-WordPress Init → Controller Actions → Validation → Business Logic → Response
-```
-
-### 3. Error Handling
-```
-Exception Thrown → Logger Called → User Notification → Graceful Degradation
-```
-
-## Component Communication
-
-### 1. Event System
-Controllers communicate through WordPress hooks:
+#### Model System
+ORM-style models for data management:
 
 ```php
-// Trigger an event
-do_action('my_plugin_user_created', $userId, $userData);
-
-// Listen for events
-public $actions = [
-    'my_plugin_user_created' => 'handleUserCreated'
-];
-```
-
-### 2. Configuration Sharing
-Shared configuration across components:
-
-```php
-// Set in one component
-Config::getInstance()->set('feature.enabled', true);
-
-// Access in another
-if (Config::getInstance()->get('feature.enabled')) {
-    // Feature logic
+class User extends Model
+{
+    protected $table = 'users';
+    protected $fillable = ['name', 'email', 'status'];
+    
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }
 ```
 
-### 3. Service Container
-Dependency injection for loose coupling:
+## Service Container
+
+The framework includes a lightweight service container for dependency injection:
+
+### Binding Services
 
 ```php
-// Register service
-$core->bind('email_service', new EmailService());
+// Bind a value
+\Adz::bind('mailer', new MailService());
 
-// Use service
-$emailService = $core->get('email_service');
+// Bind a factory function
+\Adz::bind('database', function() {
+    return new DatabaseConnection();
+});
+
+// Singleton services
+\Adz::singleton('cache', function() {
+    return new CacheManager();
+});
+```
+
+### Resolving Services
+
+```php
+// Resolve service
+$mailer = \Adz::resolve('mailer');
+
+// With default value
+$cache = \Adz::resolve('cache', new DefaultCache());
+
+// Get singleton
+$cache = \Adz::service('cache');
+```
+
+## Configuration System
+
+### Hierarchical Configuration
+
+The configuration system supports dot notation for nested values:
+
+```php
+// Set configuration
+\Adz::set('database.host', 'localhost');
+\Adz::set('database.credentials.username', 'admin');
+
+// Get configuration
+$host = \Adz::get('database.host');
+$username = \Adz::get('database.credentials.username', 'default_user');
+
+// Check if exists
+if (\Adz::config()->has('database.host')) {
+    // Configuration exists
+}
+```
+
+### Configuration Sources
+
+Configuration can come from multiple sources:
+- PHP configuration files
+- WordPress options
+- Environment variables
+- Runtime settings
+
+## Hook System
+
+### Automatic Registration
+
+Controllers automatically register WordPress hooks:
+
+```php
+class EventController extends Controller
+{
+    // These hooks are registered automatically
+    public $actions = [
+        'wp_loaded' => 'onWordPressLoaded',
+        'admin_menu' => ['setupAdminMenu', 20, 1]  // Custom priority/args
+    ];
+    
+    public $filters = [
+        'post_class' => 'addCustomClasses',
+        'the_content' => [
+            'callback' => 'enhanceContent',
+            'priority' => 5,
+            'accepted_args' => 2
+        ]
+    ];
+}
+```
+
+### Manual Registration
+
+For dynamic hook registration:
+
+```php
+public function initialize()
+{
+    // Register additional hooks based on conditions
+    if ($this->isAdmin()) {
+        $this->registerAction('admin_notices', 'showNotices');
+    }
+    
+    if (get_option('feature_enabled')) {
+        $this->registerFilter('widget_text', 'processWidget');
+    }
+}
 ```
 
 ## Security Architecture
 
-### 1. Input Validation
-All user input is validated before processing:
-- Validation rules applied automatically
-- Custom validation messages
-- Multi-level validation (client, server, database)
+### Built-in Security Features
 
-### 2. Output Escaping
-All output is escaped based on context:
-- HTML escaping for content
-- Attribute escaping for HTML attributes
-- URL escaping for links
-- JavaScript escaping for JS context
+- Nonce verification utilities
+- Capability checking helpers
+- Input sanitization
+- SQL injection prevention
+- XSS protection
 
-### 3. Permission Checking
-Capability-based access control:
-- User capabilities checked for all admin functions
-- Role-based permissions
-- Custom capability support
+### Security Utilities
 
-### 4. CSRF Protection
-All forms protected against CSRF:
-- Automatic nonce generation
-- Nonce verification on form submission
-- AJAX request protection
+```php
+// Verify capabilities
+$this->verifyCap('manage_options');
 
-## Database Design
+// Verify nonces
+$this->verifyNonce('my_action', $_POST['nonce']);
 
-### 1. Table Naming
-- Prefix: `{wp_prefix}{plugin_prefix}_`
-- Example: `wp_adz_users`, `wp_adz_settings`
+// Sanitize input
+$clean_data = Security::sanitize($_POST['data']);
 
-### 2. Schema Management
-- Migration system for version control
-- Automatic table creation
-- Schema validation
-
-### 3. Query Builder
-- Fluent interface for complex queries
-- Automatic SQL injection prevention
-- Performance optimization
-
-## Performance Considerations
-
-### 1. Caching Strategy
-- Configuration caching
-- Query result caching
-- Template caching
-- Transient API integration
-
-### 2. Lazy Loading
-- Controllers loaded only when needed
-- Database connections on demand
-- Asset loading optimization
-
-### 3. Memory Management
-- Singleton patterns for shared resources
-- Proper object cleanup
-- Memory-efficient data structures
-
-## Extensibility
-
-### 1. Hook System
-Rich hook system for customization:
-- Action hooks for events
-- Filter hooks for data modification
-- Priority system for execution order
-
-### 2. Plugin Extensions
-Framework supports plugin extensions:
-- Additional validation rules
-- Custom security checks
-- New CLI commands
-- Database adapters
-
-### 3. Theme Integration
-Seamless theme integration:
-- Template override system
-- Asset enqueueing
-- CSS/JS customization
+// Validate data
+$errors = Security::validate($data, [
+    'email' => 'required|email',
+    'name' => 'required|min:3'
+]);
+```
 
 ## Testing Architecture
 
-### 1. Unit Testing
-- PHPUnit integration
-- Mock objects for WordPress functions
-- Isolated component testing
+### Test Structure
 
-### 2. Integration Testing
-- WordPress test environment
-- Database testing with fixtures
-- API endpoint testing
+```
+tests/
+├── bootstrap.php           # Test bootstrap
+├── Unit/                   # Unit tests
+│   ├── Core/              # Core class tests
+│   ├── Db/                # Database layer tests
+│   └── Helpers/           # Helper class tests
+└── Integration/           # Integration tests
+    └── FrameworkTest.php  # Full framework tests
+```
 
-### 3. Security Testing
-- Input validation testing
-- CSRF protection testing
-- Permission checking verification
+### Test Base Classes
+
+Framework provides test utilities:
+
+```php
+class MyPluginTest extends \AdzWP\Tests\TestCase
+{
+    public function setUp(): void
+    {
+        parent::setUp();
+        // Test setup
+    }
+    
+    public function testMyFeature()
+    {
+        // Test logic
+    }
+}
+```
+
+## Performance Considerations
+
+### Lazy Loading
+
+Framework components are loaded only when needed:
+- Controllers are instantiated on demand
+- Database connections are established when required
+- Services are resolved on first access
+
+### Optimizations
+
+- Autoloader optimization for production
+- Query result caching
+- Hook registration optimization
+- Minimal WordPress core dependencies
+
+### Memory Management
+
+- Efficient object creation
+- Proper cleanup in destructors
+- Minimal global state
+- Service container lifecycle management
+
+## Extension Points
+
+### Custom Core Classes
+
+Extend framework functionality:
+
+```php
+class MyCustomCore extends \AdzWP\Core\Core
+{
+    protected function bootstrap()
+    {
+        parent::bootstrap();
+        // Custom initialization
+    }
+}
+```
+
+### Plugin Hooks
+
+Framework provides hooks for extensions:
+
+```php
+// Framework initialization
+do_action('adz_framework_init', $framework);
+
+// Plugin lifecycle
+do_action('adz_plugin_activated', $plugin);
+do_action('adz_plugin_deactivated', $plugin);
+
+// Configuration loaded
+do_action('adz_config_loaded', $config);
+```
+
+### Service Providers
+
+Register custom service providers:
+
+```php
+class MyServiceProvider
+{
+    public function register()
+    {
+        \Adz::bind('my-service', function() {
+            return new MyService();
+        });
+    }
+}
+```
 
 ## Best Practices
 
-### 1. Code Organization
-- One class per file
-- Namespace usage
-- Clear naming conventions
-- Proper documentation
+### 1. Follow PSR Standards
+- PSR-4 autoloading
+- PSR-1 basic coding standard
+- PSR-12 extended coding style
 
-### 2. Error Handling
-- Graceful error degradation
-- Comprehensive logging
-- User-friendly error messages
-- Development vs production modes
+### 2. Use Dependency Injection
+- Inject dependencies through constructor
+- Use service container for complex dependencies
+- Avoid global state when possible
 
-### 3. Security
-- Validate all input
-- Escape all output
-- Check permissions
-- Use prepared statements
+### 3. Implement Proper Error Handling
+- Use exceptions for error conditions
+- Log errors appropriately
+- Provide user-friendly error messages
 
-### 4. Performance
-- Cache when possible
-- Minimize database queries
-- Optimize asset loading
-- Use WordPress best practices
+### 4. Write Tests
+- Unit tests for business logic
+- Integration tests for component interaction
+- Test coverage for critical paths
 
-## Migration Path
+### 5. Follow WordPress Standards
+- Use WordPress coding standards
+- Respect WordPress hooks and filters
+- Follow WordPress security practices
 
-### From Standard WordPress Plugins
-1. Move functions to controller methods
-2. Convert hooks to array declarations
-3. Add validation and security
-4. Implement proper error handling
-5. Use configuration system
-
-### Backward Compatibility
-The framework maintains compatibility with:
-- Existing WordPress hooks
-- Standard plugin patterns
-- Theme integration
-- Third-party plugins
-
-This architecture provides a solid foundation for building modern, secure, and maintainable WordPress plugins while maintaining full compatibility with the WordPress ecosystem.
+This architecture provides a solid foundation for building maintainable, scalable WordPress plugins while maintaining compatibility with WordPress standards and practices.

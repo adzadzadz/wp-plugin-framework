@@ -1,198 +1,278 @@
-# Getting Started with ADZ Plugin Framework
+# Getting Started with ADZ WordPress Plugin Framework
 
-The ADZ Plugin Framework is a modern WordPress plugin development framework that provides a structured, object-oriented approach to building WordPress plugins.
+This guide will help you get started with the ADZ WordPress Plugin Framework quickly and efficiently.
 
-## Features
+## Installation
 
-- **Automatic Hook Registration**: Define actions and filters as arrays in your controllers
-- **Modern Configuration Management**: Environment-based configuration with dot notation access
-- **Comprehensive Security**: Built-in CSRF protection, validation, and sanitization
-- **Advanced Error Handling**: PSR-3 compatible logging with custom exception handling
-- **REST API Helper**: Complete HTTP client for external API integrations
-- **Database Abstraction**: Coming soon - Query builder and migration system
-- **Development Tools**: CLI commands and code generators
+### Via Composer (Recommended)
 
-## Quick Start
-
-### 1. Installation
-
-Clone or download the framework:
 ```bash
-git clone https://github.com/your-repo/wp-plugin-framework.git your-plugin-name
-cd your-plugin-name
-composer install
+composer require adz/wp-plugin-framework
 ```
 
-### 2. Basic Plugin Structure
+### Manual Installation
 
+1. Download the framework files
+2. Place them in your plugin directory
+3. Include the autoloader in your main plugin file
+
+## Creating Your First Plugin
+
+### 1. Initialize Your Plugin
+
+Create your main plugin file (e.g., `my-awesome-plugin.php`):
+
+```php
+<?php
+/**
+ * Plugin Name: My Awesome Plugin
+ * Description: A WordPress plugin built with ADZ Framework
+ * Version: 1.0.0
+ * Author: Your Name
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Plugin constants
+define('MY_PLUGIN_VERSION', '1.0.0');
+define('MY_PLUGIN_PATH', plugin_dir_path(__FILE__));
+define('MY_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+// Load Composer autoloader
+require_once MY_PLUGIN_PATH . 'vendor/autoload.php';
+
+// Initialize the framework
+$framework = \Adz::config();
+$framework->set('plugin.path', MY_PLUGIN_PATH);
+$framework->set('plugin.url', MY_PLUGIN_URL);
+$framework->set('plugin.version', MY_PLUGIN_VERSION);
+
+// Set up plugin lifecycle
+$pluginManager = \AdzWP\Core\PluginManager::getInstance(__FILE__);
+
+$pluginManager
+    ->onActivate(function() {
+        // Plugin activation logic
+        flush_rewrite_rules();
+    })
+    ->onDeactivate(function() {
+        // Plugin deactivation logic
+        flush_rewrite_rules();
+    })
+    ->setupOptions([
+        'my_plugin_enabled' => true,
+        'my_plugin_api_key' => ''
+    ]);
+
+// Initialize your controllers
+new App\Controllers\MainController();
 ```
-your-plugin/
-├── src/
-│   ├── controllers/       # Your plugin controllers
-│   ├── models/           # Data models
-│   ├── views/            # Templates
-│   └── assets/           # CSS/JS assets
-├── adz/                  # Framework core
-├── config/               # Configuration files
-└── your-plugin.php       # Main plugin file
-```
 
-### 3. Creating Your First Controller
+### 2. Create Your First Controller
 
-Create a new controller in `src/controllers/`:
+Create `src/Controllers/MainController.php`:
 
 ```php
 <?php
 
-namespace YourPlugin\Controllers;
+namespace App\Controllers;
 
-use AdzWP\Controller;
+use AdzWP\Core\Controller;
 
-class MyController extends Controller 
+class MainController extends Controller
 {
-    // Define WordPress hooks as arrays
+    // WordPress actions to hook into
     public $actions = [
         'init' => 'initialize',
-        'wp_enqueue_scripts' => [
-            'callback' => 'enqueueAssets',
-            'priority' => 10
-        ]
+        'wp_enqueue_scripts' => 'enqueueAssets'
     ];
-    
+
+    // WordPress filters to hook into
     public $filters = [
-        'the_content' => 'modifyContent'
+        'the_content' => 'enhanceContent'
     ];
-    
+
     public function initialize()
     {
-        // Your initialization code
+        // Initialize your plugin logic
+        if ($this->isAdmin()) {
+            // Admin-specific initialization
+            add_action('admin_menu', [$this, 'addAdminMenu']);
+        }
     }
-    
+
     public function enqueueAssets()
     {
-        wp_enqueue_script('my-script', plugin_dir_url(__FILE__) . '../assets/js/main.js');
+        // Enqueue scripts and styles
+        wp_enqueue_script(
+            'my-plugin-script',
+            plugin_dir_url(__FILE__) . '../../assets/js/main.js',
+            ['jquery'],
+            '1.0.0',
+            true
+        );
     }
-    
-    public function modifyContent($content)
+
+    public function enhanceContent($content)
     {
-        return $content . '<p>Added by my plugin!</p>';
+        // Modify post content
+        if (is_single() && get_option('my_plugin_enabled')) {
+            $content .= '<p>Enhanced by My Awesome Plugin!</p>';
+        }
+        return $content;
+    }
+
+    public function addAdminMenu()
+    {
+        add_options_page(
+            'My Plugin Settings',
+            'My Plugin',
+            'manage_options',
+            'my-plugin-settings',
+            [$this, 'settingsPage']
+        );
+    }
+
+    public function settingsPage()
+    {
+        echo '<div class="wrap">';
+        echo '<h1>My Plugin Settings</h1>';
+        echo '<p>Plugin settings go here...</p>';
+        echo '</div>';
     }
 }
 ```
 
-### 4. Using Configuration
+### 3. Set Up Dependencies (Optional)
 
-Access configuration values using dot notation:
-
-```php
-use AdzHive\Config;
-
-$config = Config::getInstance();
-
-// Get a configuration value
-$menuTitle = $config->get('admin.menu_title', 'Default Title');
-
-// Set a configuration value
-$config->set('custom.setting', 'value');
-
-// Check if a configuration exists
-if ($config->has('logging.enabled')) {
-    // Logging is configured
-}
-```
-
-### 5. Logging and Error Handling
-
-Use the built-in logging system:
+If your plugin requires other plugins, you can set up automatic dependency management:
 
 ```php
-// Simple logging
-adz_log_info('User logged in', ['user_id' => 123]);
-adz_log_error('Database connection failed');
-
-// Using the logger directly
-use AdzHive\Log;
-
-$logger = Log::getInstance();
-$logger->warning('This is a warning message', ['context' => 'data']);
-
-// Custom exceptions
-use AdzHive\ValidationException;
-
-throw new ValidationException('Invalid input', [
-    'email' => 'Email is required',
-    'name' => 'Name must be at least 3 characters'
+$pluginManager->setDependencies([
+    [
+        'slug' => 'woocommerce/woocommerce.php',
+        'name' => 'WooCommerce',
+        'source' => 'repo'
+    ],
+    [
+        'slug' => 'custom-plugin/custom-plugin.php',
+        'name' => 'Custom Plugin',
+        'source' => 'url',
+        'url' => 'https://example.com/custom-plugin.zip'
+    ]
 ]);
 ```
 
-### 6. Security and Validation
+### 4. Directory Structure
 
-Validate and sanitize user input:
+Your plugin should follow this structure:
 
-```php
-use AdzHive\Validator;
-use AdzHive\Security;
-
-// Validate form data
-$validator = Validator::make($_POST, [
-    'email' => 'required|email',
-    'name' => 'required|string|min:3',
-    'age' => 'numeric|between:18,100'
-]);
-
-if ($validator->fails()) {
-    throw new ValidationException('Validation failed', $validator->errors());
-}
-
-// Security helpers
-$security = Security::getInstance();
-
-// Verify nonce
-$security->verifyRequest();
-
-// Sanitize data
-$cleanData = $security->sanitizeArray($_POST, [
-    'email' => 'email',
-    'name' => 'text',
-    'description' => 'textarea'
-]);
 ```
-
-### 7. REST API Integration
-
-Make HTTP requests easily:
-
-```php
-use AdzHive\helpers\RESTHelper;
-
-// GET request
-$api = new RESTHelper('https://api.example.com/users');
-$response = $api->get();
-
-if ($response->isSuccess()) {
-    $users = $response->getResult();
-}
-
-// POST request with authentication
-$api = new RESTHelper('https://api.example.com/users')
-    ->setBearerToken('your-token')
-    ->setHeader('Accept', 'application/json');
-
-$newUser = $api->post(null, [
-    'name' => 'John Doe',
-    'email' => 'john@example.com'
-]);
+my-awesome-plugin/
+├── my-awesome-plugin.php          # Main plugin file
+├── composer.json                  # Composer dependencies
+├── src/
+│   └── Controllers/
+│       └── MainController.php     # Your controllers
+├── assets/
+│   ├── css/
+│   │   └── main.css
+│   └── js/
+│       └── main.js
+├── views/
+│   └── admin/
+│       └── settings.php           # Template files
+└── tests/
+    └── Unit/
+        └── MainControllerTest.php  # Unit tests
 ```
 
 ## Next Steps
 
-- Read the [Architecture Guide](architecture.md) to understand the framework structure
-- Check out the [API Reference](api-reference.md) for detailed documentation
-- Browse the [Examples](examples/) folder for more complex implementations
-- Learn about [Configuration](configuration.md) options
+1. **Learn about Controllers**: Read the [Controllers Guide](controllers.md)
+2. **Explore Plugin Lifecycle**: Check out [Plugin Lifecycle Management](PLUGIN_LIFECYCLE.md)
+3. **Add Database Functionality**: Learn about [Models & Database](models-database.md)
+4. **Set Up Testing**: Follow the [Testing Guide](testing.md)
 
-## Need Help?
+## Common Patterns
 
-- Check the [Troubleshooting Guide](troubleshooting.md)
-- Review the example implementations
-- Submit issues on GitHub
+### Adding Custom Post Types
+
+```php
+public $actions = [
+    'init' => 'registerCustomPostTypes'
+];
+
+public function registerCustomPostTypes()
+{
+    register_post_type('my_custom_type', [
+        'public' => true,
+        'label' => 'My Custom Type',
+        'supports' => ['title', 'editor', 'thumbnail']
+    ]);
+}
+```
+
+### Adding Settings Pages
+
+```php
+public function addAdminMenu()
+{
+    add_menu_page(
+        'My Plugin',
+        'My Plugin',
+        'manage_options',
+        'my-plugin',
+        [$this, 'adminPage'],
+        'dashicons-admin-plugins'
+    );
+}
+```
+
+### Handling AJAX Requests
+
+```php
+public $actions = [
+    'wp_ajax_my_action' => 'handleAjaxRequest',
+    'wp_ajax_nopriv_my_action' => 'handleAjaxRequest'
+];
+
+public function handleAjaxRequest()
+{
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'my_action_nonce')) {
+        wp_die('Security check failed');
+    }
+
+    // Process request
+    $result = ['success' => true, 'data' => 'Hello World'];
+    wp_send_json($result);
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Autoloader not found**: Make sure you've run `composer install`
+2. **Class not found**: Check your namespace and file structure
+3. **Hooks not firing**: Verify your controller is properly instantiated
+
+### Debug Mode
+
+Enable debug mode in your plugin:
+
+```php
+$framework->set('debug', true);
+```
+
+This will provide more detailed error messages and logging.
+
+## Support
+
+- [Framework Documentation](README.md)
+- [GitHub Issues](https://github.com/adzadzadz/wp-plugin-framework/issues)
+- [Community Forum](https://community.example.com)

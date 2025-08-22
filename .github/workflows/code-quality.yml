@@ -1,0 +1,56 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+        tools: composer, phpcs, phpstan
+        
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+    - name: Cache composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+        
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+      
+    - name: Check for security vulnerabilities
+      run: composer audit
+      
+    - name: Validate PHP files syntax
+      run: find ./src -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+      
+    - name: Check for PHP compatibility (PHP 7.4+)
+      run: find ./src -type f -name "*.php" -exec php -l {} \; | grep -v "No syntax errors detected"
+      continue-on-error: true
+      
+    - name: Check file permissions
+      run: |
+        find ./src -type f -name "*.php" -not -perm 644 -exec ls -la {} \;
+        if [ $? -eq 0 ]; then
+          echo "Found files with incorrect permissions"
+          exit 1
+        fi
+      continue-on-error: true

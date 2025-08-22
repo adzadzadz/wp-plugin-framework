@@ -57,3 +57,6 @@ wp-content/cache/
 wp-content/backup-db/
 wp-content/advanced-cache.php
 wp-content/wp-cache-config.php
+
+# PHPUnit
+.phpunit.result.cache

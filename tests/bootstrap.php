@@ -1,60 +1,85 @@
 <?php
-/**
- * PHPUnit Bootstrap File for ADZ WordPress Plugin Framework
- * 
- * This file sets up the testing environment for the framework.
- * It loads necessary dependencies and sets up WordPress testing environment.
- */
 
-// Prevent direct access
+// Framework bootstrap for testing
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+// Define test constants
+define('ADZ_TEST_MODE', true);
+define('ADZ_TEST_DIR', __DIR__);
+define('ADZ_FRAMEWORK_DIR', dirname(__DIR__));
+
+// Mock WordPress functions for testing
+if (!function_exists('plugin_dir_path')) {
+    function plugin_dir_path($file) {
+        return dirname($file) . '/';
+    }
+}
+
+if (!function_exists('plugin_dir_url')) {
+    function plugin_dir_url($file) {
+        return 'http://example.com/wp-content/plugins/' . basename(dirname($file)) . '/';
+    }
+}
+
 if (!defined('ABSPATH')) {
     define('ABSPATH', '/tmp/wordpress/');
 }
 
-// Define testing constants
-define('ADZ_FRAMEWORK_TESTS', true);
-define('ADZ_PLUGIN_PATH', dirname(__DIR__) . '/');
-define('ADZ_PLUGIN_URL', 'http://example.org/wp-content/plugins/adz-framework/');
-define('ADZ_PLUGIN_VERSION', '1.0.0-test');
-
-// Load Composer autoloader
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-
-// Load Brain Monkey for WordPress function mocking
-if (class_exists('\Brain\Monkey')) {
-    \Brain\Monkey\setUp();
+if (!defined('WP_CONTENT_DIR')) {
+    define('WP_CONTENT_DIR', ABSPATH . 'wp-content');
 }
 
-// Set up error reporting
-error_reporting(E_ALL & ~E_DEPRECATED);
-ini_set('display_errors', 1);
+if (!defined('ADZ_CONFIG_PATH')) {
+    define('ADZ_CONFIG_PATH', WP_CONTENT_DIR . '/adz-config/');
+}
 
-// Load WordPress test environment if available
-if (getenv('WP_TESTS_DIR')) {
-    $wp_tests_dir = getenv('WP_TESTS_DIR');
-    if (file_exists($wp_tests_dir . '/includes/functions.php')) {
-        require_once $wp_tests_dir . '/includes/functions.php';
-        
-        // Load the plugin
-        function _manually_load_plugin() {
-            require_once dirname(__DIR__) . '/adz-plugin.php';
+if (!function_exists('esc_html')) {
+    function esc_html($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('wp_kses_post')) {
+    function wp_kses_post($data) {
+        return strip_tags($data, '<p><a><strong><em><ul><ol><li><br><h1><h2><h3><h4><h5><h6>');
+    }
+}
+
+if (!function_exists('apply_filters')) {
+    function apply_filters($tag, $value, ...$args) {
+        return $value;
+    }
+}
+
+if (!function_exists('wp_mkdir_p')) {
+    function wp_mkdir_p($target) {
+        return true;
+    }
+}
+
+if (!function_exists('adz_log_warning')) {
+    function adz_log_warning($message) {
+        // Mock function for testing
+    }
+}
+
+if (!function_exists('adz_log_error')) {
+    function adz_log_error($message) {
+        // Mock function for testing
+    }
+}
+
+// Mock global $wpdb object for database tests
+global $wpdb;
+if (!isset($wpdb)) {
+    $wpdb = new class {
+        public $prefix = 'wp_';
+        public function get_results($query) {
+            return [];
         }
-        tests_add_filter('muplugins_loaded', '_manually_load_plugin');
-        
-        require_once $wp_tests_dir . '/includes/bootstrap.php';
-    }
-}
-
-// Load test helpers and utilities
-require_once __DIR__ . '/Helpers/TestCase.php';
-require_once __DIR__ . '/Helpers/WordPressTestCase.php';
-require_once __DIR__ . '/Helpers/FrameworkTestCase.php';
-
-// Initialize framework for testing
-if (class_exists('ADZ')) {
-    try {
-        \ADZ::pluginize(__FILE__, 'test');
-    } catch (Exception $e) {
-        // Silently handle initialization errors in test environment
-    }
+        public function prepare($query, ...$args) {
+            return $query;
+        }
+    };
 }
