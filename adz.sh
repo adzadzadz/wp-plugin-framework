@@ -46,6 +46,12 @@ show_usage() {
     echo "  test:unit                   Run unit tests only"
     echo "  test:coverage               Run tests with coverage"
     echo ""
+    echo -e "${GREEN}📦 Build & Distribution:${NC}"
+    echo "  build                       Build and minify assets, create installable zip"
+    echo "  build:assets                Build and minify assets only"
+    echo "  build:watch                 Watch assets for changes and auto-build"
+    echo "  build:zip                   Create installable plugin zip"
+    echo ""
     echo -e "${GREEN}Examples:${NC}"
     echo "  ./adz.sh make:controller PostController"
     echo "  ./adz.sh make:model User --migration"
@@ -583,6 +589,82 @@ run_tests() {
     esac
 }
 
+# Build functions
+check_node_dependencies() {
+    if ! command -v node &> /dev/null; then
+        log_error "Node.js is required for the build system. Please install Node.js first."
+        exit 1
+    fi
+    
+    if [[ ! -f "$FRAMEWORK_DIR/node_modules/.bin/terser" ]]; then
+        log_info "Installing Node.js dependencies..."
+        cd "$FRAMEWORK_DIR" && npm install
+        if [[ $? -ne 0 ]]; then
+            log_error "Failed to install Node.js dependencies"
+            exit 1
+        fi
+    fi
+}
+
+# Build and minify assets
+build_assets() {
+    log_info "Building and minifying assets..."
+    check_node_dependencies
+    
+    cd "$FRAMEWORK_DIR"
+    node tools/build-assets.js "$@"
+    
+    if [[ $? -eq 0 ]]; then
+        log_success "Assets built successfully!"
+    else
+        log_error "Asset build failed"
+        exit 1
+    fi
+}
+
+# Watch assets for changes
+build_watch() {
+    log_info "Starting asset watcher..."
+    check_node_dependencies
+    
+    cd "$FRAMEWORK_DIR"
+    node tools/build-assets.js --watch
+}
+
+# Create installable zip
+build_zip() {
+    log_info "Creating installable plugin zip..."
+    check_node_dependencies
+    
+    cd "$FRAMEWORK_DIR"
+    node tools/build-zip.js "$@"
+    
+    if [[ $? -eq 0 ]]; then
+        log_success "Plugin zip created successfully!"
+        log_info "Check the dist/ directory for your installable plugin"
+    else
+        log_error "Zip creation failed"
+        exit 1
+    fi
+}
+
+# Complete build process
+build_complete() {
+    log_info "Starting complete build process..."
+    check_node_dependencies
+    
+    cd "$FRAMEWORK_DIR"
+    node tools/build.js "$@"
+    
+    if [[ $? -eq 0 ]]; then
+        log_success "Complete build finished successfully!"
+        log_info "Your installable plugin is ready in the dist/ directory"
+    else
+        log_error "Build process failed"
+        exit 1
+    fi
+}
+
 # Main command dispatcher
 main() {
     local command="$1"
@@ -623,6 +705,21 @@ main() {
             ;;
         "test:coverage")
             run_tests "coverage"
+            ;;
+        "build")
+            shift
+            build_complete "$@"
+            ;;
+        "build:assets")
+            shift
+            build_assets "$@"
+            ;;
+        "build:watch")
+            build_watch
+            ;;
+        "build:zip")
+            shift
+            build_zip "$@"
             ;;
         "help"|"--help"|"-h"|"")
             show_usage

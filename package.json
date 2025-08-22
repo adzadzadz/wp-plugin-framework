@@ -1,0 +1,22 @@
+{
+  "name": "adz-wp-plugin-framework",
+  "version": "2.3.0",
+  "description": "ADZ WordPress Plugin Framework - Build tools and asset management",
+  "scripts": {
+    "build": "node tools/build.js",
+    "build:assets": "node tools/build-assets.js",
+    "build:zip": "node tools/build-zip.js",
+    "watch": "node tools/build-assets.js --watch",
+    "clean": "rm -rf build dist *.zip"
+  },
+  "devDependencies": {
+    "terser": "^5.19.0",
+    "clean-css": "^5.3.2",
+    "archiver": "^5.3.1",
+    "chokidar": "^3.5.3",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
