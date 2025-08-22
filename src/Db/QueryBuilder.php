@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WP;
+namespace AdzWP\Db;
 
 /**
  * Database Query Builder
@@ -20,7 +20,7 @@ class QueryBuilder
     protected $limit;
     protected $offset;
 
-    public function __construct(Connection $connection = null)
+    public function __construct(?Connection $connection = null)
     {
         $this->connection = $connection ?: Connection::getInstance();
     }
@@ -32,6 +32,14 @@ class QueryBuilder
     {
         $this->from = $this->connection->getTable($table);
         return $this;
+    }
+    
+    /**
+     * Alias for table() method
+     */
+    public function from($table)
+    {
+        return $this->table($table);
     }
 
     /**

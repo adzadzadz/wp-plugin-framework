@@ -1,5 +1,5 @@
 <?php 
-namespace Adz\WP;
+namespace AdzWP\Core;
 
 class ErrorException extends \ErrorException {
  

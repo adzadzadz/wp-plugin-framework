@@ -1,11 +1,10 @@
 <?php 
-namespace Adz\WP;
+namespace AdzWP\Core;
 
-use ADZ;
 
 Class Plugin extends Core {
 
-  private $_cNamespace = "\\adz\\controllers\\";
+  private $_cNamespace = "\\App\\Controllers\\";
 
   private $_installed = false;
 
@@ -36,7 +35,10 @@ Class Plugin extends Core {
   {
     foreach ( $controllers as $c ) {
       $c = $this->_cNamespace . $c . 'Controller';
-      ADZ::build( $c );
+      $instance = new $c();
+      if (method_exists($instance, 'init')) {
+        $instance->init();
+      }
     }
   }
 

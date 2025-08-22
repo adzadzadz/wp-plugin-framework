@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WP;
+namespace AdzWP\Core;
 
 class Log 
 {

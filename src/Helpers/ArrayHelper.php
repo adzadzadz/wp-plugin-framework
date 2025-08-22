@@ -1,7 +1,7 @@
 <?php 
-namespace Adz\WP\helpers;
+namespace AdzWP\Helpers;
 
-class ArrayHelper extends \AdzHive\Adz {
+class ArrayHelper {
 
 function isAssociative($array) {
   return (bool)count(array_filter(array_keys($array), 'is_string'));

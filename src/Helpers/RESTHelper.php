@@ -1,8 +1,8 @@
 <?php 
 
-namespace Adz\WP\helpers;
+namespace AdzWP\Helpers;
 
-class RESTHelper extends \AdzHive\Adz {
+class RESTHelper {
 
   public $type = 'json';
   public $client;

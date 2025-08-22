@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WP;
+namespace AdzWP\Db;
 
 /**
  * Database Migrator
@@ -378,7 +378,7 @@ class Migrator
     {
         return "<?php
 
-use Adz\WP\\Migration;
+use AdzWP\\Migration;
 
 class {$className} extends Migration
 {

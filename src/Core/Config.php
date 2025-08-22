@@ -1,8 +1,6 @@
 <?php 
 
-namespace Adz\WP;
-
-use ADZ;
+namespace AdzWP\Core;
 
 /**
  * Enhanced Configuration class with modern features
@@ -96,16 +94,16 @@ class Config {
   protected function getDefaultConfigPath()
   {
     if (defined('ADZ_CONFIG_PATH')) {
-      return ADZ_CONFIG_PATH;
+      return \ADZ_CONFIG_PATH;
     }
     
-    return WP_CONTENT_DIR . '/adz-config/';
+    return \WP_CONTENT_DIR . '/adz-config/';
   }
   
   protected function loadLegacyConfig()
   {
     try {
-      if (class_exists('ADZ') && property_exists('ADZ', 'path') && property_exists('ADZ', 'env')) {
+      if (class_exists('\\AdzWP\\ADZ') && property_exists('\\AdzWP\\ADZ', 'path') && property_exists('\\AdzWP\\ADZ', 'env')) {
         $filepath = ADZ::$path . "project/" . ADZ::$env . "/";
         $configContent = null;
         
@@ -129,7 +127,7 @@ class Config {
         }
       }
     } catch (\Exception $e) {
-      adz_log_warning('Failed to load legacy config: ' . $e->getMessage());
+      \adz_log_warning('Failed to load legacy config: ' . $e->getMessage());
     }
   }
   
@@ -142,7 +140,7 @@ class Config {
     $this->config = $this->defaultConfig;
     
     if (!file_exists($this->configPath)) {
-      wp_mkdir_p($this->configPath);
+      \wp_mkdir_p($this->configPath);
     }
     
     $configFiles = [
@@ -165,7 +163,7 @@ class Config {
       }
     }
     
-    $this->config = apply_filters('adz_config', $this->config);
+    $this->config = \apply_filters('adz_config', $this->config);
     $this->loaded = true;
   }
 
@@ -184,7 +182,7 @@ class Config {
       }
       return $data;
     } catch ( \Exception $e ) {
-      adz_log_error('Failed to load dependencies: ' . $e->getMessage());
+      \adz_log_error('Failed to load dependencies: ' . $e->getMessage());
       return  [
         'info' => 'Invalid dependencies data',
         'error_message' => $e->getMessage()
@@ -314,10 +312,33 @@ class Dependency {
       ];
     }
   }
+  
+  /**
+   * ArrayAccess implementation
+   */
+  public function offsetExists($offset): bool
+  {
+    return $this->has($offset);
+  }
+  
+  public function offsetGet($offset)
+  {
+    return $this->get($offset);
+  }
+  
+  public function offsetSet($offset, $value): void
+  {
+    $this->set($offset, $value);
+  }
+  
+  public function offsetUnset($offset): void
+  {
+    unset($this->config[$offset]);
+  }
 
 }
 
-class DependencyInfo extends StatusConstants {
+class DependencyInfo extends \AdzWP\Core\StatusConstants {
 
   public $textDomain;
 
@@ -367,7 +388,7 @@ class DependencyInfo extends StatusConstants {
   public function getCustom( $key )
   {
     return array_key_exists( $key, $this->custom ) 
-      ? $this->custom[ 'key' ]
+      ? $this->custom[ $key ]
       : false;
   }
 

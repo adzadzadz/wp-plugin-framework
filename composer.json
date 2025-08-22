@@ -28,8 +28,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Adz\\": "src/"
-        }
+            "AdzWP\\": "src/"
+        },
+        "classmap": [
+            "src/Adz.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WP;
+namespace AdzWP\Db;
 
 /**
  * Enhanced Database Model with ORM-like features

@@ -1,8 +1,7 @@
 <?php 
 
-namespace Adz\WP;
+namespace AdzWP\Core;
 
-use ADZ;
 
 class Dependency extends Core {
 
@@ -11,7 +10,7 @@ class Dependency extends Core {
     $name = ADZ::$conf->name;
     add_action( 'admin_notices', function() use( $name, $depName )
     {
-      echo \Adz\WP\View::render("dependency/admin_notices", [
+      echo \AdzWP\View::render("dependency/admin_notices", [
         "dependency" => $depName,
         "name" => $name
       ]);
@@ -59,7 +58,7 @@ class Dependency extends Core {
         }
         activate_plugin( $info->slug );
       } 
-      ADZ::$conf->dependencies[$id]->acvite = Self::STATUS_ACTIVE;
+      ADZ::$conf->dependencies[$id]->active = Self::STATUS_ACTIVE;
       
     }
   }
