@@ -1,0 +1,279 @@
+#!/usr/bin/env php
+<?php
+/**
+ * ADZ Framework Plugin Setup Script
+ * 
+ * This script transforms the downloaded framework into a ready-to-use plugin template.
+ * It's automatically run after composer create-project.
+ */
+
+echo "\n🚀 ADZ WordPress Plugin Framework Setup\n";
+echo "=====================================\n\n";
+
+// Get the target directory (current directory when run via composer)
+$targetDir = getcwd();
+$pluginName = basename($targetDir);
+
+// Convert kebab-case to Title Case for display
+$pluginDisplayName = ucwords(str_replace(['-', '_'], ' ', $pluginName));
+
+// Convert to namespace-friendly format
+$pluginNamespace = str_replace(['-', '_'], '', ucwords($pluginName, '-_'));
+
+echo "Setting up plugin: {$pluginDisplayName}\n";
+echo "Namespace: {$pluginNamespace}\n";
+echo "Directory: {$targetDir}\n\n";
+
+// Step 1: Copy stubs to root
+echo "📁 Copying plugin template files...\n";
+
+$stubsDir = $targetDir . '/stubs';
+if (!is_dir($stubsDir)) {
+    echo "❌ Error: Stubs directory not found!\n";
+    exit(1);
+}
+
+// Copy main plugin file
+copy($stubsDir . '/project-files/main-plugin-file.php', $targetDir . '/' . $pluginName . '.php');
+
+// Copy composer.json template
+copy($stubsDir . '/project-files/composer.json', $targetDir . '/composer-plugin.json');
+
+// Copy other essential files
+$filesToCopy = [
+    'project-files/phpunit.xml' => 'phpunit.xml',
+    'project-files/package.json' => 'package.json'
+];
+
+foreach ($filesToCopy as $source => $dest) {
+    if (file_exists($stubsDir . '/' . $source)) {
+        copy($stubsDir . '/' . $source, $targetDir . '/' . $dest);
+    }
+}
+
+// Copy directories
+$dirsToCopy = [
+    'assets' => 'assets',
+    'views' => 'views',
+    'controllers' => 'src/Controllers',
+    'models' => 'src/Models',
+    'config' => 'config',
+    'tests' => 'tests'
+];
+
+foreach ($dirsToCopy as $source => $dest) {
+    $sourceDir = $stubsDir . '/' . $source;
+    $destDir = $targetDir . '/' . $dest;
+    
+    if (is_dir($sourceDir)) {
+        copyDirectory($sourceDir, $destDir);
+    }
+}
+
+// Step 2: Update template files with actual plugin info
+echo "✏️  Customizing template files...\n";
+
+// Update main plugin file
+$mainPluginFile = $targetDir . '/' . $pluginName . '.php';
+if (file_exists($mainPluginFile)) {
+    $content = file_get_contents($mainPluginFile);
+    
+    // Replace placeholders
+    $content = str_replace('Your Plugin Name', $pluginDisplayName, $content);
+    $content = str_replace('your-plugin-textdomain', $pluginName, $content);
+    $content = str_replace('YOUR_PLUGIN', strtoupper(str_replace('-', '_', $pluginName)), $content);
+    
+    file_put_contents($mainPluginFile, $content);
+}
+
+// Update composer.json for the plugin
+$pluginComposer = $targetDir . '/composer-plugin.json';
+if (file_exists($pluginComposer)) {
+    $composerData = json_decode(file_get_contents($pluginComposer), true);
+    $composerData['name'] = 'your-vendor/' . $pluginName;
+    $composerData['description'] = $pluginDisplayName . ' - WordPress plugin built with ADZ Framework';
+    
+    // Update autoload namespace
+    $composerData['autoload']['psr-4'] = [
+        $pluginNamespace . '\\' => 'src/'
+    ];
+    
+    file_put_contents($pluginComposer, json_encode($composerData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+}
+
+// Update controller namespace
+$controllerFile = $targetDir . '/src/Controllers/ExampleController.php';
+if (file_exists($controllerFile)) {
+    $content = file_get_contents($controllerFile);
+    $content = str_replace('namespace App\\Controllers;', 'namespace ' . $pluginNamespace . '\\Controllers;', $content);
+    file_put_contents($controllerFile, $content);
+}
+
+// Update model namespace  
+$modelFile = $targetDir . '/src/Models/ExampleModel.php';
+if (file_exists($modelFile)) {
+    $content = file_get_contents($modelFile);
+    $content = str_replace('namespace App\\Models;', 'namespace ' . $pluginNamespace . '\\Models;', $content);
+    file_put_contents($modelFile, $content);
+}
+
+// Step 3: Clean up framework files
+echo "🧹 Cleaning up framework files...\n";
+
+$filesToRemove = [
+    'bin/adz',
+    'bin/setup-plugin',
+    'src/Core',
+    'src/Db', 
+    'src/Helpers',
+    'src/Traits',
+    'src/AdzMain.php',
+    'stubs',
+    'docs',
+    'tests/Unit',
+    'tests/Integration',
+    'tests/bootstrap.php',
+    '.github',
+    'README.md',
+    'LICENSE'
+];
+
+foreach ($filesToRemove as $item) {
+    $path = $targetDir . '/' . $item;
+    if (is_file($path)) {
+        unlink($path);
+    } elseif (is_dir($path)) {
+        removeDirectory($path);
+    }
+}
+
+// Step 4: Replace original composer.json
+if (file_exists($pluginComposer)) {
+    rename($pluginComposer, $targetDir . '/composer.json');
+}
+
+// Step 5: Create plugin README
+echo "📝 Creating plugin README...\n";
+$readmeContent = <<<README
+# {$pluginDisplayName}
+
+A WordPress plugin built with the ADZ Framework.
+
+## Installation
+
+1. Upload the plugin files to `/wp-content/plugins/{$pluginName}/`
+2. Run `composer install` in the plugin directory
+3. Activate the plugin through the WordPress admin
+
+## Development
+
+### Requirements
+- PHP 7.4+
+- Composer
+- WordPress 5.0+
+
+### Setup
+```bash
+composer install
+```
+
+### Testing
+```bash
+composer test
+```
+
+## Framework Documentation
+
+This plugin is built with the ADZ WordPress Plugin Framework.
+Documentation: https://github.com/adzadzadz/wp-plugin-framework/tree/main/docs
+
+## Features
+
+- MVC Architecture
+- Automatic hook registration
+- Plugin lifecycle management
+- Database abstraction
+- Asset management
+
+## Usage
+
+Edit the controllers in `src/Controllers/` to add your plugin functionality.
+
+Example controller:
+```php
+<?php
+namespace {$pluginNamespace}\\Controllers;
+
+use AdzWP\\Core\\Controller;
+
+class ExampleController extends Controller
+{
+    public \$actions = [
+        'init' => 'initialize'
+    ];
+    
+    public function initialize()
+    {
+        // Your plugin logic here
+    }
+}
+```
+README;
+
+file_put_contents($targetDir . '/README.md', $readmeContent);
+
+// Step 6: Final message
+echo "\n✅ Plugin setup complete!\n\n";
+echo "📁 Your plugin structure:\n";
+echo "   {$pluginName}.php           - Main plugin file\n";
+echo "   src/Controllers/            - Your plugin controllers\n";
+echo "   src/Models/                 - Your plugin models\n";
+echo "   assets/                     - CSS, JS, and images\n";
+echo "   views/                      - Template files\n";
+echo "   composer.json               - Plugin dependencies\n\n";
+
+echo "🚀 Next steps:\n";
+echo "   1. cd {$targetDir}\n";
+echo "   2. composer install\n";
+echo "   3. Edit src/Controllers/ExampleController.php\n";
+echo "   4. Upload to WordPress and activate!\n\n";
+
+echo "📚 Documentation: https://github.com/adzadzadz/wp-plugin-framework/tree/main/docs\n\n";
+
+// Helper functions
+function copyDirectory($src, $dst) {
+    if (!is_dir($dst)) {
+        mkdir($dst, 0755, true);
+    }
+    
+    $files = scandir($src);
+    foreach ($files as $file) {
+        if ($file == '.' || $file == '..') continue;
+        
+        $srcFile = $src . '/' . $file;
+        $dstFile = $dst . '/' . $file;
+        
+        if (is_dir($srcFile)) {
+            copyDirectory($srcFile, $dstFile);
+        } else {
+            copy($srcFile, $dstFile);
+        }
+    }
+}
+
+function removeDirectory($dir) {
+    if (!is_dir($dir)) return;
+    
+    $files = scandir($dir);
+    foreach ($files as $file) {
+        if ($file == '.' || $file == '..') continue;
+        
+        $path = $dir . '/' . $file;
+        if (is_dir($path)) {
+            removeDirectory($path);
+        } else {
+            unlink($path);
+        }
+    }
+    rmdir($dir);
+}
