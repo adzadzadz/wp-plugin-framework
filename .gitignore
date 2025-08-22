@@ -17,6 +17,7 @@ ehthumbs.db
 Thumbs.db
 
 # IDE files
+.claude
 .vscode/
 .idea/
 *.swp
