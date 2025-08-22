@@ -1,22 +1,24 @@
 <?php 
 /**
- * Plugin Name: The Toolbox
- * Plugin URI: https://www.adriansaycon.com/
- * Description: The client's helper tool. Tons of features to come.
+ * Plugin Name: Your Plugin Name
+ * Plugin URI: https://yoursite.com/
+ * Description: Your plugin description here.
  * Version: 1.0.0
- * Author: Adrian T Saycon <adzbite@gmail.com>
- * Text Domain: the-toolbox
- * Author URI: https://www.adriansaycon.com/
+ * Author: Your Name
+ * Text Domain: your-plugin-textdomain
+ * Author URI: https://yoursite.com/
+ * Requires at least: 5.0
+ * Tested up to: 6.6
+ * Requires PHP: 7.4
  */
 
 if ( !defined( 'ABSPATH' ) ) {
-  die( 'Do not open this file directly.' );
+    die( 'Do not open this file directly.' );
 }
+
 require_once 'vendor/autoload.php';
 
-( \ADZ::pluginize( __FILE__, $env = 'default', ) )->load([
-  'Admin',
-  // 'WPIE',
-  // 'ACF',
-  'Frontend'
+( \ADZ::pluginize( __FILE__, $env = 'default' ) )->load([
+    'Admin',
+    'Frontend'
 ]);

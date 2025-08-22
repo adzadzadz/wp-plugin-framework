@@ -1,22 +1,29 @@
-<?php 
+<?php
 
 namespace adz\controllers;
 
 use AdzWP\Controller;
-use AdzWP\View;
-use adz\models\ConfigModel;
-use AdzWP\Config;
 
 class FrontendController extends Controller {
 
-  public function init()
-  {
+    public $actions = [
+        'wp_enqueue_scripts' => 'enqueueFrontendAssets',
+        'init' => 'init'
+    ];
 
-  }
+    protected function bootstrap()
+    {
+        
+    }
 
-  public function buildCSS()
-  {
+    public function init()
+    {
+        
+    }
 
-  }
+    public function enqueueFrontendAssets()
+    {
+        
+    }
 
 }
