@@ -178,7 +178,7 @@ class Config {
   {
     try {
       foreach ( $dependencies as $id => $info ) {
-        $data[$id] = ( new Dependency( $id, $info ) )->info;
+        $data[$id] = ( new ConfigDependency( $id, $info ) )->info;
       }
       return $data;
     } catch ( \Exception $e ) {
@@ -288,7 +288,7 @@ class Config {
 
 }
 
-class Dependency {
+class ConfigDependency {
 
   public $id;
 
