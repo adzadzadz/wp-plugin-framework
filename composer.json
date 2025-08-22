@@ -41,12 +41,16 @@
         }
     },
     "bin": [
-        "bin/adz"
+        "bin/adz",
+        "bin/setup-plugin"
     ],
     "scripts": {
         "test": "phpunit",
         "test:unit": "phpunit --testsuite=Unit",
-        "test:coverage": "phpunit --coverage-html coverage"
+        "test:coverage": "phpunit --coverage-html coverage",
+        "post-create-project-cmd": [
+            "php bin/setup-plugin"
+        ]
     },
     "support": {
         "issues": "https://github.com/adzadzadz/wp-plugin-framework/issues",
