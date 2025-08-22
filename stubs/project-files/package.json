@@ -1,0 +1,18 @@
+{
+    "name": "your-wordpress-plugin",
+    "version": "1.0.0",
+    "description": "WordPress plugin built with ADZ Framework",
+    "scripts": {
+        "build": "node tools/build.js",
+        "build:assets": "node tools/build-assets.js",
+        "build:watch": "node tools/build-assets.js --watch",
+        "build:zip": "node tools/build-zip.js"
+    },
+    "devDependencies": {
+        "terser": "^5.0.0",
+        "clean-css": "^5.0.0",
+        "autoprefixer": "^10.0.0",
+        "postcss": "^8.0.0",
+        "chokidar": "^3.0.0"
+    }
+}

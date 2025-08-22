@@ -1,0 +1,588 @@
+#!/bin/bash
+
+# ADZ WordPress Plugin Framework - CLI Tool
+# Packagist-ready version with vendor isolation
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Detect framework installation
+if [[ -f "vendor/adz/wp-plugin-framework/bin/adz" ]]; then
+    # Running from project directory
+    FRAMEWORK_DIR="vendor/adz/wp-plugin-framework"
+    PROJECT_DIR="."
+elif [[ -f "../../../bin/adz" ]]; then
+    # Running from vendor/bin/adz
+    FRAMEWORK_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
+    PROJECT_DIR="$(pwd)"
+else
+    echo -e "${RED}✗${NC} ADZ Framework not found. Please run 'composer require adz/wp-plugin-framework' first."
+    exit 1
+fi
+
+STUBS_DIR="$FRAMEWORK_DIR/stubs"
+
+# Show header
+show_header() {
+    echo -e "${BLUE}🚀 ADZ WordPress Plugin Framework${NC}"
+    echo -e "${YELLOW}   The intuitive MVC framework for WordPress plugin development${NC}"
+    echo ""
+}
+
+# Show usage information
+show_usage() {
+    show_header
+    echo "Usage: adz [command] [options]"
+    echo ""
+    echo -e "${GREEN}🚀 Project Setup:${NC}"
+    echo "  init                        Initialize ADZ project in current directory"
+    echo ""
+    echo -e "${GREEN}📦 Code Generation:${NC}"
+    echo "  make:controller <name>      Create a new controller"
+    echo "  make:model <name>           Create a new model"
+    echo "  make:view <name>            Create a new view template"
+    echo "  make:migration <name>       Create a new database migration"
+    echo ""
+    echo -e "${GREEN}🗄️  Database Management:${NC}"
+    echo "  migrate                     Run pending migrations"
+    echo "  migrate:rollback [steps]    Rollback migrations (default: 1 step)"
+    echo "  migrate:reset               Reset all migrations"
+    echo "  migrate:status              Show migration status"
+    echo ""
+    echo -e "${GREEN}🔧 Framework Commands:${NC}"
+    echo "  test                        Run framework tests"
+    echo "  test:unit                   Run unit tests only"
+    echo "  test:coverage               Run tests with coverage"
+    echo ""
+    echo -e "${GREEN}📦 Build & Distribution:${NC}"
+    echo "  build                       Build and minify assets, create installable zip"
+    echo "  build:assets                Build and minify assets only"
+    echo "  build:watch                 Watch assets for changes and auto-build"
+    echo "  build:zip                   Create installable plugin zip"
+    echo ""
+    echo -e "${GREEN}Examples:${NC}"
+    echo "  adz init"
+    echo "  adz make:controller PostController"
+    echo "  adz make:model User --migration"
+    echo "  adz make:view posts/index"
+    echo "  adz migrate"
+}
+
+# Utility functions
+log_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}✗${NC} $1" >&2
+}
+
+log_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+# Ensure directory exists
+ensure_dir() {
+    if [[ ! -d "$1" ]]; then
+        mkdir -p "$1"
+        log_info "Created directory: $1"
+    fi
+}
+
+# Check if current directory is an ADZ project
+is_adz_project() {
+    [[ -f "composer.json" ]] && grep -q "adz/wp-plugin-framework" composer.json
+}
+
+# Initialize ADZ project
+init_project() {
+    show_header
+    log_info "Initializing ADZ WordPress Plugin Framework project..."
+    
+    # Check if already initialized
+    if is_adz_project; then
+        log_warning "This directory already appears to be an ADZ project."
+        read -p "Continue anyway? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Create directory structure
+    ensure_dir "src/controllers"
+    ensure_dir "src/models"
+    ensure_dir "src/views"
+    ensure_dir "config"
+    ensure_dir "assets/css"
+    ensure_dir "assets/js"
+    ensure_dir "assets/images"
+    ensure_dir "migrations"
+    
+    # Copy template files
+    log_info "Copying template files..."
+    
+    # Copy composer.json
+    cp "$STUBS_DIR/project-files/composer.json" "$PROJECT_DIR/"
+    
+    # Copy package.json
+    cp "$STUBS_DIR/project-files/package.json" "$PROJECT_DIR/"
+    
+    # Copy phpunit.xml
+    cp "$STUBS_DIR/project-files/phpunit.xml" "$PROJECT_DIR/"
+    
+    # Copy main plugin file
+    cp "$STUBS_DIR/project-files/main-plugin-file.php" "$PROJECT_DIR/main-plugin.php"
+    
+    # Copy build tools
+    cp -r "$STUBS_DIR/project-files/tools" "$PROJECT_DIR/"
+    
+    # Copy test framework
+    cp -r "$STUBS_DIR/tests" "$PROJECT_DIR/"
+    
+    # Copy example files
+    cp "$STUBS_DIR/controllers/ExampleController.php" "$PROJECT_DIR/src/controllers/"
+    cp "$STUBS_DIR/models/ExampleModel.php" "$PROJECT_DIR/src/models/"
+    cp "$STUBS_DIR/views/example.php" "$PROJECT_DIR/src/views/"
+    cp "$STUBS_DIR/config/config.php" "$PROJECT_DIR/config/"
+    
+    # Copy example assets
+    cp -r "$STUBS_DIR/assets/"* "$PROJECT_DIR/assets/"
+    
+    # Create .gitignore
+    cat > "$PROJECT_DIR/.gitignore" << 'EOF'
+/vendor/
+/node_modules/
+/dist/
+/coverage/
+.env
+.env.local
+.DS_Store
+*.log
+composer.lock
+package-lock.json
+.phpunit.result.cache
+EOF
+    
+    # Create README
+    cat > "$PROJECT_DIR/README.md" << 'EOF'
+# WordPress Plugin with ADZ Framework
+
+A WordPress plugin built using the ADZ Framework.
+
+## Installation
+
+1. Run `composer install`
+2. Run `npm install`
+3. Customize your plugin details in `main-plugin.php`
+4. Start building your controllers, models, and views!
+
+## Commands
+
+- `adz make:controller ControllerName` - Create a new controller
+- `adz make:model ModelName` - Create a new model
+- `adz make:view viewname` - Create a new view
+- `adz migrate` - Run database migrations
+- `adz build` - Build and package your plugin
+
+## Documentation
+
+Visit [ADZ Framework Documentation](https://github.com/adz/wp-plugin-framework) for more information.
+EOF
+    
+    log_success "ADZ project initialized successfully!"
+    log_info "Next steps:"
+    echo "  1. Run 'composer install' to install dependencies"
+    echo "  2. Run 'npm install' to install build tools"
+    echo "  3. Customize 'main-plugin.php' with your plugin details"
+    echo "  4. Start building with 'adz make:controller YourController'"
+}
+
+# Convert CamelCase to snake_case
+camel_to_snake() {
+    echo "$1" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]'
+}
+
+# Convert snake_case to CamelCase
+snake_to_camel() {
+    local input="$1"
+    local result=""
+    IFS='_' read -ra PARTS <<< "$input"
+    for part in "${PARTS[@]}"; do
+        if [[ -n "$part" ]]; then
+            result="${result}$(echo "${part:0:1}" | tr '[:lower:]' '[:upper:]')${part:1}"
+        fi
+    done
+    echo "$result"
+}
+
+# Pluralize a word
+pluralize() {
+    local word="$1"
+    if [[ "$word" =~ y$ ]]; then
+        echo "${word%y}ies"
+    elif [[ "$word" =~ [sxz]$ ]] || [[ "$word" =~ [cs]h$ ]]; then
+        echo "${word}es"
+    else
+        echo "${word}s"
+    fi
+}
+
+# Generate Controller
+make_controller() {
+    local name="$1"
+    local namespace_path="$2"
+    
+    if [[ -z "$name" ]]; then
+        log_error "Controller name is required"
+        echo "Usage: adz make:controller <ControllerName>"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    # Handle namespaced controllers
+    if [[ "$name" == *"/"* ]]; then
+        namespace_path=$(dirname "$name")
+        name=$(basename "$name")
+    fi
+    
+    # Ensure Controller suffix
+    if [[ ! "$name" =~ Controller$ ]]; then
+        name="${name}Controller"
+    fi
+    
+    # Create directory structure
+    local controller_dir="src/controllers"
+    if [[ -n "$namespace_path" ]]; then
+        controller_dir="$controller_dir/$namespace_path"
+    fi
+    
+    ensure_dir "$controller_dir"
+    
+    local controller_file="$controller_dir/$name.php"
+    
+    if [[ -f "$controller_file" ]]; then
+        log_warning "Controller already exists: $controller_file"
+        read -p "Overwrite? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Generate namespace
+    local namespace="App\\Controllers"
+    if [[ -n "$namespace_path" ]]; then
+        namespace="$namespace\\$(echo "$namespace_path" | tr '/' '\\')"
+    fi
+    
+    # Generate controller content
+    cat > "$controller_file" << EOF
+<?php
+
+namespace $namespace;
+
+use Adz\\WordPress\\WordPressController as Controller;
+
+class $name extends Controller
+{
+    public \$actions = [
+        'init' => 'initialize'
+    ];
+
+    public \$filters = [];
+
+    protected function bootstrap()
+    {
+        // Additional initialization if needed
+    }
+
+    public function initialize()
+    {
+        // WordPress initialization logic
+        if (\$this->isAdmin()) {
+            // Admin-specific initialization
+        }
+        
+        if (\$this->isFrontend()) {
+            // Frontend-specific initialization
+        }
+    }
+}
+EOF
+    
+    log_success "Controller created: $controller_file"
+}
+
+# Generate Model
+make_model() {
+    local name="$1"
+    local create_migration="$2"
+    
+    if [[ -z "$name" ]]; then
+        log_error "Model name is required"
+        echo "Usage: adz make:model <ModelName> [--migration]"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    # Ensure Model suffix
+    if [[ ! "$name" =~ Model$ ]]; then
+        name="${name}Model"
+    fi
+    
+    ensure_dir "src/models"
+    
+    local model_file="src/models/$name.php"
+    
+    if [[ -f "$model_file" ]]; then
+        log_warning "Model already exists: $model_file"
+        read -p "Overwrite? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Generate table name from model name
+    local base_name="${name%Model}"
+    local table_name=$(pluralize $(camel_to_snake "$base_name"))
+    
+    # Generate model content
+    cat > "$model_file" << EOF
+<?php
+
+namespace App\\Models;
+
+use Adz\\WordPress\\Model;
+
+class $name extends Model
+{
+    protected \$table = '$table_name';
+    
+    protected \$fillable = [
+        // Add fillable attributes here
+    ];
+    
+    protected \$guarded = [
+        'id'
+    ];
+    
+    // Add model relationships and methods here
+}
+EOF
+    
+    log_success "Model created: $model_file"
+    
+    # Create migration if requested
+    if [[ "$create_migration" == "--migration" ]] || [[ "$3" == "--migration" ]]; then
+        make_migration "create_${table_name}_table"
+    fi
+}
+
+# Generate View
+make_view() {
+    local name="$1"
+    
+    if [[ -z "$name" ]]; then
+        log_error "View name is required"
+        echo "Usage: adz make:view <path/viewname>"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    local view_dir="src/views/$(dirname "$name")"
+    local view_name="$(basename "$name")"
+    
+    ensure_dir "$view_dir"
+    
+    local view_file="$view_dir/$view_name.php"
+    
+    if [[ -f "$view_file" ]]; then
+        log_warning "View already exists: $view_file"
+        read -p "Overwrite? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Generate view content
+    cat > "$view_file" << 'EOF'
+<?php
+/**
+ * View Template
+ * 
+ * Available variables:
+ * - All variables passed from the controller
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
+
+<div class="adz-view">
+    <h1><?php echo esc_html($title ?? 'Default Title'); ?></h1>
+    
+    <div class="content">
+        <?php if (isset($content)): ?>
+            <?php echo wp_kses_post($content); ?>
+        <?php else: ?>
+            <p>Default content goes here.</p>
+        <?php endif; ?>
+    </div>
+</div>
+EOF
+    
+    log_success "View created: $view_file"
+}
+
+# Generate Migration
+make_migration() {
+    local name="$1"
+    
+    if [[ -z "$name" ]]; then
+        log_error "Migration name is required"
+        echo "Usage: adz make:migration <migration_name>"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    ensure_dir "migrations"
+    
+    local timestamp=$(date +"%Y_%m_%d_%H%M%S")
+    local migration_file="migrations/${timestamp}_${name}.php"
+    local class_name=$(snake_to_camel "$name")
+    
+    # Generate migration content
+    cat > "$migration_file" << EOF
+<?php
+
+use Adz\\Database\\Migration;
+
+class $class_name extends Migration
+{
+    /**
+     * Run the migration
+     */
+    public function up()
+    {
+        // Example: Create a new table
+        \$this->createTable('example_table', function(\$table) {
+            \$table->id();
+            \$table->string('name');
+            \$table->text('description')->nullable();
+            \$table->boolean('is_active')->default(1);
+            \$table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migration
+     */
+    public function down()
+    {
+        \$this->dropTable('example_table');
+    }
+}
+EOF
+    
+    log_success "Migration created: $migration_file"
+    log_info "Run 'adz migrate' to execute pending migrations"
+}
+
+# Proxy other commands to existing functionality if available
+proxy_command() {
+    local command="$1"
+    shift
+    
+    if [[ -f "tools/build.js" ]]; then
+        case "$command" in
+            "build"|"build:assets"|"build:watch"|"build:zip")
+                if command -v node &> /dev/null; then
+                    case "$command" in
+                        "build") node tools/build.js "$@" ;;
+                        "build:assets") node tools/build-assets.js "$@" ;;
+                        "build:watch") node tools/build-assets.js --watch ;;
+                        "build:zip") node tools/build-zip.js "$@" ;;
+                    esac
+                else
+                    log_error "Node.js is required for build commands"
+                    exit 1
+                fi
+                ;;
+        esac
+    fi
+    
+    if [[ -f "vendor/bin/phpunit" ]]; then
+        case "$command" in
+            "test") ./vendor/bin/phpunit ;;
+            "test:unit") ./vendor/bin/phpunit --testsuite=Unit ;;
+            "test:coverage") ./vendor/bin/phpunit --coverage-html coverage ;;
+        esac
+    fi
+}
+
+# Main command dispatcher
+main() {
+    local command="$1"
+    
+    case "$command" in
+        "init")
+            init_project
+            ;;
+        "make:controller")
+            make_controller "$2" "$3"
+            ;;
+        "make:model")
+            make_model "$2" "$3"
+            ;;
+        "make:view")
+            make_view "$2"
+            ;;
+        "make:migration")
+            make_migration "$2"
+            ;;
+        "build"|"build:assets"|"build:watch"|"build:zip"|"test"|"test:unit"|"test:coverage")
+            proxy_command "$@"
+            ;;
+        "help"|"--help"|"-h"|"")
+            show_usage
+            ;;
+        *)
+            log_error "Unknown command: $command"
+            echo ""
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+# Run the main function with all arguments
+main "$@"
