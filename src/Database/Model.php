@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 /**
  * Enhanced Database Model with ORM-like features

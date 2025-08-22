@@ -1,6 +1,6 @@
 <?php
 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 /**
  * Database Connection Manager

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Adz\Core\ADZ;
+use Adz\WP\ADZ;
 
 class CoreTest extends TestCase
 {

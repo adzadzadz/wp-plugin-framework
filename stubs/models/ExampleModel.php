@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Adz\WordPress\Model;
+use Adz\WP\Model;
 
 class ExampleModel extends Model
 {

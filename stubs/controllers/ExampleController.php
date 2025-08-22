@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use Adz\WordPress\WordPressController as Controller;
+use Adz\WP\WordPressController as Controller;
 
 class ExampleController extends Controller
 {

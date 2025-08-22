@@ -1,5 +1,5 @@
 <?php 
-namespace Adz\Core\helpers;
+namespace Adz\WP\helpers;
 
 class ArrayHelper extends \AdzHive\Adz {
 

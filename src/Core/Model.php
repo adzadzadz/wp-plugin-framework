@@ -1,8 +1,12 @@
 <?php 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 class Model extends core {
   
   public $data;
+
+}
+
+class WordPressModel extends \AdzHive\Model {
 
 }

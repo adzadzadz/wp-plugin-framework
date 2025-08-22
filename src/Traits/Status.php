@@ -1,5 +1,5 @@
 <?php 
-namespace Adz\Core\traits;
+namespace Adz\WP\traits;
 
 trait Status {
 

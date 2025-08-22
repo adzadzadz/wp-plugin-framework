@@ -1,6 +1,6 @@
 <?php 
 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 use \ADZ;
 
@@ -15,5 +15,9 @@ class View extends Core {
     ob_end_clean();
     return $content;
   }
+
+}
+
+class WordPressView extends \AdzHive\View {
 
 }

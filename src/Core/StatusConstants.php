@@ -1,5 +1,5 @@
 <?php 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 class StatusConstants {
 

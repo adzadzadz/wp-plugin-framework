@@ -1,6 +1,6 @@
 <?php
 
-use AdzFramework\Core\Log;
+use AdzFramework\WP\Log;
 
 if (!function_exists('adz_log')) {
     function adz_log($message, $level = 'info', array $context = [])

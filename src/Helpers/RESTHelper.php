@@ -1,6 +1,6 @@
 <?php 
 
-namespace Adz\Core\helpers;
+namespace Adz\WP\helpers;
 
 class RESTHelper extends \AdzHive\Adz {
 

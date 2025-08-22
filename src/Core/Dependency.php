@@ -1,9 +1,9 @@
 <?php 
 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 use ADZ;
-use AdzFramework\WordPress\Plugin;
+use AdzFramework\WP\Plugin;
 
 class Dependency extends Core {
 

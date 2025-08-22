@@ -1,5 +1,5 @@
 <?php 
-namespace Adz\WordPress;
+namespace Adz\WP;
 
 /**
  * Base class for adz/dev-tools

@@ -1,6 +1,6 @@
 <?php 
 
-namespace Adz\Core;
+namespace Adz\WP;
 
 class ADZ {
 
@@ -24,7 +24,7 @@ class ADZ {
   /**
    * The WP Plugin instance
    *
-   * @var \Adz\WordPress\Plugin
+   * @var \Adz\Core\Plugin
    */
   public static $plugin;
 
@@ -34,7 +34,7 @@ class ADZ {
     ADZ::$env = $env;
     ADZ::$conf = new \Adz\Core\Config();
     require_once ADZ::$path . "config/" . $env . ".php";
-    return ADZ::$plugin = ( new \Adz\WordPress\Plugin() );
+    return ADZ::$plugin = ( new \Adz\Core\Plugin() );
   }
 
   public static function build( String $class )
