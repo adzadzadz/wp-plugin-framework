@@ -16,7 +16,6 @@
   }],
   "minimum-stability": "dev",
   "require": {
-    "php": ">=5.4.0",
-    "asana/asana": "^0.10.0"
+    "php": ">=5.4.0"
   }
 }
