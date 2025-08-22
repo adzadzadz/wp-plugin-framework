@@ -9,7 +9,7 @@ This guide covers different methods to install and set up the ADZ WordPress Plug
 The fastest way to get started with a new plugin project:
 
 ```bash
-composer create-project adz/wp-plugin-framework my-awesome-plugin
+composer create-project adzadzadz/wp-plugin-framework my-awesome-plugin
 cd my-awesome-plugin
 ```
 
@@ -24,7 +24,7 @@ This creates a complete plugin structure with:
 If you want to add the framework to an existing plugin:
 
 ```bash
-composer require adz/wp-plugin-framework
+composer require adzadzadz/wp-plugin-framework
 ```
 
 Then update your main plugin file:

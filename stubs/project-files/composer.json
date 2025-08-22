@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": ">=7.4",
-        "adz/wp-plugin-framework": "^1.0"
+        "adzadzadz/wp-plugin-framework": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",

@@ -45,7 +45,7 @@ Create `composer.json`:
     "description": "A staff directory plugin built with ADZ Framework",
     "type": "wordpress-plugin",
     "require": {
-        "adz/wp-plugin-framework": "^2.0"
+        "adzadzadz/wp-plugin-framework": "^2.0"
     },
     "autoload": {
         "psr-4": {

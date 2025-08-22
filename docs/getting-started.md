@@ -7,7 +7,7 @@ This guide will help you get started with the ADZ WordPress Plugin Framework qui
 ### Via Composer (Recommended)
 
 ```bash
-composer require adz/wp-plugin-framework
+composer require adzadzadz/wp-plugin-framework
 ```
 
 ### Manual Installation
