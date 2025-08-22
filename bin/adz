@@ -19,6 +19,10 @@ elif [[ -f "../../../bin/adz" ]]; then
     # Running from vendor/bin/adz
     FRAMEWORK_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
     PROJECT_DIR="$(pwd)"
+elif [[ "$(basename "$(dirname "$0")")" == "bin" ]]; then
+    # Running from framework's bin directory (development/CI)
+    FRAMEWORK_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
+    PROJECT_DIR="."
 else
     echo -e "${RED}✗${NC} ADZ Framework not found. Please run 'composer require adz/wp-plugin-framework' first."
     exit 1

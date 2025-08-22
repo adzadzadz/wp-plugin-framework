@@ -21,6 +21,9 @@ jobs:
         php-version: '8.1'
         extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
         
+    - name: Install dependencies
+      run: composer install --no-dev --prefer-dist
+        
     - name: Make CLI executable
       run: chmod +x ./bin/adz
       
