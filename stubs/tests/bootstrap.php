@@ -37,7 +37,7 @@ if (getenv('WP_TESTS_DIR')) {
         
         // Load the plugin
         function _manually_load_plugin() {
-            require_once dirname(__DIR__) . '/adz-plugin.php';
+            require_once dirname(__DIR__) . '/main-plugin-file.php';
         }
         tests_add_filter('muplugins_loaded', '_manually_load_plugin');
         
@@ -51,9 +51,11 @@ require_once __DIR__ . '/Helpers/WordPressTestCase.php';
 require_once __DIR__ . '/Helpers/FrameworkTestCase.php';
 
 // Initialize framework for testing
-if (class_exists('ADZ')) {
+if (class_exists('Adz')) {
     try {
-        \ADZ::pluginize(__FILE__, 'test');
+        // Set up test configuration
+        \Adz::set('testing', true);
+        \Adz::set('plugin.path', dirname(__DIR__) . '/');
     } catch (Exception $e) {
         // Silently handle initialization errors in test environment
     }

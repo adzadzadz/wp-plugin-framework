@@ -78,7 +78,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
         }
         
         // Create a generic controller mock
-        return new class extends \Adz\WP\Controller {
+        return new class extends \AdzWP\Core\Controller {
             public $actions = [
                 'init' => 'testInit'
             ];
@@ -102,7 +102,7 @@ abstract class FrameworkTestCase extends WordPressTestCase
      */
     protected function createMockModel(): object
     {
-        return new class extends \Adz\WP\Model {
+        return new class extends \AdzWP\Db\Model {
             protected $data = [];
             
             public function getData($key = null) {

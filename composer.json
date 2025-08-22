@@ -31,7 +31,7 @@
             "AdzWP\\": "src/"
         },
         "classmap": [
-            "src/Adz.php"
+            "src/AdzMain.php"
         ]
     },
     "autoload-dev": {

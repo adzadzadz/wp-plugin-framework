@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Adz\WP\Model;
+use AdzWP\Db\Model;
 
 class ExampleModel extends Model
 {

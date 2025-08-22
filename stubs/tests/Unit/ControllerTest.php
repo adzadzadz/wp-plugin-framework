@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\Helpers\FrameworkTestCase;
-use Adz\WP\Controller;
+use AdzWP\Core\Controller;
 
 /**
  * Unit tests for the Controller class

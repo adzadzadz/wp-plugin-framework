@@ -26,4 +26,15 @@ define('YOUR_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once YOUR_PLUGIN_PATH . 'vendor/autoload.php';
 
 // Initialize the plugin
-\Adz\WP\ADZ::pluginize(__FILE__, 'default');
+// Using the new framework structure:
+// 1. Get the main Adz framework instance
+$framework = \Adz::config();
+
+// 2. Bootstrap your plugin components
+// Example: Initialize your controllers
+// new App\Controllers\ExampleController();
+
+// 3. Set up your plugin configuration
+$framework->set('plugin.path', YOUR_PLUGIN_PATH);
+$framework->set('plugin.url', YOUR_PLUGIN_URL);
+$framework->set('plugin.version', YOUR_PLUGIN_VERSION);
