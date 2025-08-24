@@ -36,6 +36,23 @@ class TestAutoHooksController extends Controller
         return $content;
     }
 
+    /**
+     * Test priority via parameter
+     */
+    public function actionCustomPriority($priority = 15)
+    {
+        $this->actionsCalled[] = 'custom_priority';
+    }
+
+    /**
+     * Test priority with normal parameters
+     */
+    public function filterWithPriority($content, $post_id, $priority = 25)
+    {
+        $this->filtersCalled[] = 'with_priority';
+        return $content;
+    }
+
     // This should NOT be registered (doesn't start with action/filter)
     public function regularMethod()
     {
@@ -86,7 +103,7 @@ class ControllerAutoHooksTest extends TestCase
     {
         global $wp_actions;
 
-        $this->assertCount(2, $wp_actions);
+        $this->assertCount(3, $wp_actions);
 
         // Check wp_init action with custom priority
         $wpInitAction = array_filter($wp_actions, function($action) {
@@ -105,13 +122,22 @@ class ControllerAutoHooksTest extends TestCase
         $adminMenuAction = array_values($adminMenuAction)[0];
         $this->assertEquals(10, $adminMenuAction['priority']); // Default priority
         $this->assertEquals(0, $adminMenuAction['accepted_args']); // No parameters
+
+        // Check custom_priority action with parameter-based priority
+        $customPriorityAction = array_filter($wp_actions, function($action) {
+            return $action['hook'] === 'custom_priority';
+        });
+        $this->assertCount(1, $customPriorityAction);
+        $customPriorityAction = array_values($customPriorityAction)[0];
+        $this->assertEquals(15, $customPriorityAction['priority']); // Priority from parameter default
+        $this->assertEquals(0, $customPriorityAction['accepted_args']); // Priority param excluded from count
     }
 
     public function testAutoRegistersFilters()
     {
         global $wp_filters;
 
-        $this->assertCount(2, $wp_filters);
+        $this->assertCount(3, $wp_filters);
 
         // Check the_title filter with custom args
         $theTitleFilter = array_filter($wp_filters, function($filter) {
@@ -130,6 +156,15 @@ class ControllerAutoHooksTest extends TestCase
         $theContentFilter = array_values($theContentFilter)[0];
         $this->assertEquals(10, $theContentFilter['priority']); // Default priority
         $this->assertEquals(1, $theContentFilter['accepted_args']); // Parameter count
+
+        // Check with_priority filter with parameter-based priority
+        $withPriorityFilter = array_filter($wp_filters, function($filter) {
+            return $filter['hook'] === 'with_priority';
+        });
+        $this->assertCount(1, $withPriorityFilter);
+        $withPriorityFilter = array_values($withPriorityFilter)[0];
+        $this->assertEquals(25, $withPriorityFilter['priority']); // Priority from parameter default
+        $this->assertEquals(2, $withPriorityFilter['accepted_args']); // Priority param excluded from count
     }
 
     public function testConvertMethodNameToHook()

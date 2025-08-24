@@ -16,11 +16,12 @@ class AutoHooksController extends Controller
 {
     /**
      * Automatically registered as 'wp_init' action with priority 20
-     * @priority 20
+     * Using priority parameter (recommended approach)
      */
-    public function actionWpInit()
+    public function actionWpInit($priority = 20)
     {
-        // This will be called on wp_init hook
+        // This will be called on wp_init hook with priority 20
+        // The $priority parameter is excluded from WordPress arguments
         if ($this->isAdmin()) {
             $this->setupAdminFeatures();
         }
@@ -69,12 +70,14 @@ class AutoHooksController extends Controller
     }
 
     /**
-     * Automatically registered as 'the_title' filter with 2 accepted args
-     * @args 2
+     * Automatically registered as 'the_title' filter with custom priority
+     * Using priority parameter for better IDE support
      */
-    public function filterTheTitle($title, $post_id)
+    public function filterTheTitle($title, $post_id, $priority = 15)
     {
         // Modify the title for specific post types
+        // WordPress receives $title and $post_id (2 arguments)
+        // $priority parameter is automatically excluded
         if (get_post_type($post_id) === 'my_custom_post_type') {
             return '[CUSTOM] ' . $title;
         }
@@ -98,12 +101,13 @@ class AutoHooksController extends Controller
 
     /**
      * Automatically registered as 'wp_mail' filter with custom priority
-     * @priority 5
-     * @args 1
+     * Demonstrates priority parameter with complex WordPress arguments
      */
-    public function filterWpMail($args)
+    public function filterWpMail($args, $priority = 5)
     {
         // Modify email parameters before sending
+        // WordPress receives only $args (1 argument)
+        // $priority parameter is automatically excluded
         if (!isset($args['headers'])) {
             $args['headers'] = [];
         }

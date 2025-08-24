@@ -75,6 +75,33 @@ class ExampleController extends Controller
 ## ⚙️ **Advanced Configuration**
 
 ### Custom Priority
+
+#### Method 1: Priority Parameter (Recommended)
+Add a `$priority` parameter with default value:
+
+```php
+public function actionWpInit($priority = 5)
+{
+    // This runs with priority 5 instead of default 10
+    // The priority parameter is automatically excluded from WordPress args
+}
+
+public function filterTheTitle($title, $post_id, $priority = 20)
+{
+    // This filter runs with priority 20
+    // WordPress only receives $title and $post_id arguments
+    return $title . ' (Modified)';
+}
+
+public function actionSavePost($post_id, $post, $update, $priority = 15)
+{
+    // Custom priority with multiple WordPress arguments
+    // WordPress receives: $post_id, $post, $update (3 args)
+    // Priority parameter is excluded from the count
+}
+```
+
+#### Method 2: Docblock Annotation
 Use `@priority` annotation to set custom hook priorities:
 
 ```php
@@ -181,22 +208,30 @@ class MixedController extends Controller
 ## 💡 **Best Practices**
 
 1. **Use descriptive method names** that match WordPress hook names
-2. **Add docblock annotations** for custom priority/args when needed
+2. **Prefer priority parameters** over docblock annotations for better IDE support
 3. **Keep method names consistent** with WordPress conventions
 4. **Group related functionality** in the same controller
 5. **Use parameter type hints** for better IDE support
 
 ```php
 /**
- * Handle user registration
- * @priority 5
- * @args 1
+ * Handle user registration with priority parameter
  */
-public function actionUserRegister(int $user_id): void
+public function actionUserRegister(int $user_id, $priority = 5): void
 {
-    // Type hints improve IDE experience
+    // Type hints + priority parameter = excellent IDE experience
     $user = get_userdata($user_id);
     // ... your logic
+}
+
+/**
+ * Filter with multiple WordPress args + custom priority
+ */
+public function filterWpMail(array $args, array $atts, $phpmailer, $priority = 8): array
+{
+    // WordPress receives 3 arguments, priority is excluded
+    $args['headers'][] = 'X-Mailer: My Plugin';
+    return $args;
 }
 ```
 

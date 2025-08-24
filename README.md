@@ -174,13 +174,12 @@ class MyAwesomeController extends Controller
     }
 
     /**
-     * Use docblock annotations for custom priority and args
-     * @priority 20
-     * @args 2
+     * Use priority parameter for custom priority (recommended)
      */
-    public function actionAdminMenu()
+    public function actionAdminMenu($priority = 20)
     {
-        // This runs with priority 20 and accepts 2 arguments
+        // This runs with priority 20
+        // WordPress receives 0 arguments (priority param excluded)
         add_menu_page('My Plugin', 'My Plugin', 'manage_options', 'my-plugin', [$this, 'renderPage']);
     }
 }

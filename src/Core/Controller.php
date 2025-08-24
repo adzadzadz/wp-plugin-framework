@@ -180,12 +180,18 @@ class Controller extends Core {
     }
 
     /**
-     * Get priority from method docblock or return default
+     * Get priority from method parameter, docblock, or return default
      */
     protected function getMethodPriority(\ReflectionMethod $method)
     {
-        $docComment = $method->getDocComment();
+        // First check for priority parameter
+        $paramPriority = $this->getMethodPriorityFromParams($method, $this);
+        if ($paramPriority !== null) {
+            return $paramPriority;
+        }
         
+        // Then check docblock
+        $docComment = $method->getDocComment();
         if ($docComment && preg_match('/@priority\s+(\d+)/', $docComment, $matches)) {
             return (int) $matches[1];
         }
@@ -195,6 +201,7 @@ class Controller extends Core {
 
     /**
      * Get accepted args from method docblock or count parameters
+     * Excludes priority parameter if present
      */
     protected function getMethodAcceptedArgs(\ReflectionMethod $method)
     {
@@ -205,8 +212,42 @@ class Controller extends Core {
             return (int) $matches[1];
         }
         
-        // Default: count method parameters
-        return $method->getNumberOfParameters();
+        // Count method parameters, excluding priority if present
+        $paramCount = $method->getNumberOfParameters();
+        
+        // Check if last parameter is named 'priority' - if so, exclude it from count
+        $parameters = $method->getParameters();
+        if (!empty($parameters)) {
+            $lastParam = end($parameters);
+            if ($lastParam->getName() === 'priority') {
+                $paramCount--;
+            }
+        }
+        
+        return $paramCount;
+    }
+
+    /**
+     * Get priority from method parameter, docblock, or return default
+     */
+    protected function getMethodPriorityFromParams(\ReflectionMethod $method, $instance)
+    {
+        $parameters = $method->getParameters();
+        
+        // Check if last parameter is named 'priority'
+        if (!empty($parameters)) {
+            $lastParam = end($parameters);
+            if ($lastParam->getName() === 'priority') {
+                // Get default value if available
+                if ($lastParam->isDefaultValueAvailable()) {
+                    return $lastParam->getDefaultValue();
+                }
+                // If no default, return standard default
+                return 10;
+            }
+        }
+        
+        return null; // No priority parameter found
     }
 
 }
