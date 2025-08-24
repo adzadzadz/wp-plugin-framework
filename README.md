@@ -107,6 +107,7 @@ src/
 
 ### 🏢 Enterprise Architecture  
 - **MVC pattern** - Separate concerns like a pro
+- **Auto-hook registration** - Methods automatically become WordPress hooks
 - **ORM-style models** - Database interactions made easy
 - **Dependency injection** - Clean, testable code
 - **Event system** - WordPress hooks without the mess
@@ -142,7 +143,7 @@ $framework->set('plugin.path', __DIR__);
 new App\Controllers\MyAwesomeController();
 ```
 
-### 2. Build Your Controller
+### 2. Build Your Controller (Auto-Hook Registration)
 ```php
 // src/Controllers/MyAwesomeController.php
 <?php
@@ -152,22 +153,35 @@ use AdzWP\Core\Controller;
 
 class MyAwesomeController extends Controller
 {
-    public $actions = [
-        'init' => 'handleInit',
-        'wp_ajax_my_action' => 'handleAjax'
-    ];
-
-    public function handleInit()
+    // Methods starting with 'action' are automatically registered as WordPress actions
+    public function actionWpInit()
     {
         if ($this->isAdmin()) {
             $this->setupAdminInterface();
         }
     }
 
-    public function handleAjax()
+    public function actionWpAjaxMyAction()
     {
         $data = ['message' => 'Hello from ADZ Framework!'];
         wp_send_json_success($data);
+    }
+
+    // Methods starting with 'filter' are automatically registered as WordPress filters
+    public function filterTheTitle($title, $post_id)
+    {
+        return $title . ' (Enhanced)';
+    }
+
+    /**
+     * Use docblock annotations for custom priority and args
+     * @priority 20
+     * @args 2
+     */
+    public function actionAdminMenu()
+    {
+        // This runs with priority 20 and accepts 2 arguments
+        add_menu_page('My Plugin', 'My Plugin', 'manage_options', 'my-plugin', [$this, 'renderPage']);
     }
 }
 ```
