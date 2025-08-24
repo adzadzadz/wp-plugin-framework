@@ -13,6 +13,42 @@ class Controller extends Core {
         $this->autoRegisterHooks();
     }
 
+    /**
+     * Get a service instance
+     * 
+     * @param string $serviceName Service name or full class name
+     * @return Service|null
+     */
+    protected function service(string $serviceName): ?Service
+    {
+        return Service::getService($serviceName);
+    }
+
+    /**
+     * Magic method to get services as properties
+     * Example: $this->user_service or $this->userService
+     */
+    public function __get(string $name)
+    {
+        // Convert camelCase to snake_case
+        $serviceName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
+        
+        // Remove _service suffix if present for lookup
+        $lookupName = $serviceName;
+        if (substr($serviceName, -8) === '_service') {
+            $lookupName = substr($serviceName, 0, -8);
+        }
+        
+        $service = Service::getService($lookupName);
+        
+        if ($service) {
+            return $service;
+        }
+        
+        // Try original name
+        return Service::getService($serviceName);
+    }
+
     public function addAction($hook, $callback = null, $priority = 10, $accepted_args = 1)
     {
         $callback = $callback ?? $hook;

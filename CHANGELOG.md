@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Service Layer**: Complete service architecture with dependency injection and auto-registration
 - Auto-hook registration: methods named `actionWpInit()` and `filterTheTitle()` automatically become WordPress hooks
-- Support for `@priority` and `@args` docblock annotations in controller methods
+- Priority parameter support: `actionWpInit($priority = 20)` for cleaner hook priority management
+- Service examples and comprehensive documentation in stubs for new users
 
 ---
 

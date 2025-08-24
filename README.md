@@ -87,6 +87,7 @@ src/
 ├── Core/                # Core framework components
 │   ├── Controller.php   # MVC Controller base class
 │   ├── Model.php        # MVC Model base class
+│   ├── Service.php      # Service layer base class
 │   ├── Config.php       # Configuration management
 │   └── View.php         # Template rendering
 ├── Db/                  # Database layer
@@ -107,6 +108,7 @@ src/
 
 ### 🏢 Enterprise Architecture  
 - **MVC pattern** - Separate concerns like a pro
+- **Service layer** - Reusable business logic with dependency injection
 - **Auto-hook registration** - Methods automatically become WordPress hooks
 - **ORM-style models** - Database interactions made easy
 - **Dependency injection** - Clean, testable code
@@ -185,7 +187,55 @@ class MyAwesomeController extends Controller
 }
 ```
 
-### 3. Create Your Models
+### 3. Create Your Services
+```php
+// src/Services/UserService.php
+<?php
+namespace App\Services;
+
+use AdzWP\Core\Service;
+
+class UserService extends Service
+{
+    public function getDisplayName(int $userId): string
+    {
+        $user = get_userdata($userId);
+        return $user ? ($user->display_name ?: $user->user_login) : 'Unknown User';
+    }
+
+    public function updateUserMeta(int $userId, string $key, $value): bool
+    {
+        if (!get_userdata($userId)) {
+            return false;
+        }
+        
+        return update_user_meta($userId, $key, $value) !== false;
+    }
+}
+```
+
+### 4. Use Services in Controllers
+```php
+class MyController extends Controller
+{
+    public function actionWpInit()
+    {
+        // Initialize services
+        new \App\Services\UserService();
+    }
+
+    public function actionUserRegister($userId)
+    {
+        // Access service via magic property
+        $displayName = $this->userService->getDisplayName($userId);
+        
+        // Update user meta via service
+        $this->userService->updateUserMeta($userId, 'welcome_sent', true);
+    }
+}
+```
+
+### 5. Create Your Models
 ```php
 // src/Models/CustomPost.php
 <?php
@@ -227,6 +277,7 @@ class CustomPost extends Model
 ## 📚 Documentation & Support
 
 - **[Complete Documentation](docs/)** - Comprehensive framework guide
+- **[Services Guide](docs/services.md)** - Service layer and dependency injection
 - **[Auto-Hook Registration](docs/auto-hooks.md)** - Automatic WordPress hook registration
 - **[Quick Start Guide](docs/getting-started.md)** - Get building immediately
 - **[API Reference](docs/api/core.md)** - Full framework reference
