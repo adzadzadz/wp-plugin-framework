@@ -228,6 +228,7 @@ class CustomPost extends Model
 ## 📚 Documentation & Support
 
 - **[Complete Documentation](docs/)** - Comprehensive framework guide
+- **[Auto-Hook Registration](docs/auto-hooks.md)** - Automatic WordPress hook registration
 - **[Quick Start Guide](docs/getting-started.md)** - Get building immediately
 - **[API Reference](docs/api/core.md)** - Full framework reference
 - **[Plugin Lifecycle](docs/PLUGIN_LIFECYCLE.md)** - Install/uninstall hooks
