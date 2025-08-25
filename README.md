@@ -11,7 +11,7 @@ This framework is for developers who:
 - ✅ **Love working with MVC architecture** instead of procedural spaghetti code
 - ✅ **Want to start writing plugins immediately** without setup hassle
 - ✅ **Demand modern PHP practices** in WordPress development
-- ✅ **Need enterprise-grade structure** for scalable plugin development
+- ✅ **Need professional structure** for scalable plugin development
 
 ## ⚡ Operation CWAL - Instant Plugin Development
 
@@ -87,6 +87,7 @@ src/
 ├── Core/                # Core framework components
 │   ├── Controller.php   # MVC Controller base class
 │   ├── Model.php        # MVC Model base class
+│   ├── Service.php      # Service layer base class
 │   ├── Config.php       # Configuration management
 │   └── View.php         # Template rendering
 ├── Db/                  # Database layer
@@ -105,8 +106,10 @@ src/
 - **PSR-4 autoloading** - Modern PHP standards
 - **Composer ready** - Professional dependency management
 
-### 🏢 Enterprise Architecture  
+### 🏗️ Professional Architecture  
 - **MVC pattern** - Separate concerns like a pro
+- **Service layer** - Reusable business logic with dependency injection
+- **Auto-hook registration** - Methods automatically become WordPress hooks
 - **ORM-style models** - Database interactions made easy
 - **Dependency injection** - Clean, testable code
 - **Event system** - WordPress hooks without the mess
@@ -142,7 +145,7 @@ $framework->set('plugin.path', __DIR__);
 new App\Controllers\MyAwesomeController();
 ```
 
-### 2. Build Your Controller
+### 2. Build Your Controller (Auto-Hook Registration)
 ```php
 // src/Controllers/MyAwesomeController.php
 <?php
@@ -152,27 +155,87 @@ use AdzWP\Core\Controller;
 
 class MyAwesomeController extends Controller
 {
-    public $actions = [
-        'init' => 'handleInit',
-        'wp_ajax_my_action' => 'handleAjax'
-    ];
-
-    public function handleInit()
+    // Methods starting with 'action' are automatically registered as WordPress actions
+    public function actionWpInit()
     {
         if ($this->isAdmin()) {
             $this->setupAdminInterface();
         }
     }
 
-    public function handleAjax()
+    public function actionWpAjaxMyAction()
     {
         $data = ['message' => 'Hello from ADZ Framework!'];
         wp_send_json_success($data);
     }
+
+    // Methods starting with 'filter' are automatically registered as WordPress filters
+    public function filterTheTitle($title, $post_id)
+    {
+        return $title . ' (Enhanced)';
+    }
+
+    /**
+     * Use priority parameter for custom priority (recommended)
+     */
+    public function actionAdminMenu($priority = 20)
+    {
+        // This runs with priority 20
+        // WordPress receives 0 arguments (priority param excluded)
+        add_menu_page('My Plugin', 'My Plugin', 'manage_options', 'my-plugin', [$this, 'renderPage']);
+    }
 }
 ```
 
-### 3. Create Your Models
+### 3. Create Your Services
+```php
+// src/Services/UserService.php
+<?php
+namespace App\Services;
+
+use AdzWP\Core\Service;
+
+class UserService extends Service
+{
+    public function getDisplayName(int $userId): string
+    {
+        $user = get_userdata($userId);
+        return $user ? ($user->display_name ?: $user->user_login) : 'Unknown User';
+    }
+
+    public function updateUserMeta(int $userId, string $key, $value): bool
+    {
+        if (!get_userdata($userId)) {
+            return false;
+        }
+        
+        return update_user_meta($userId, $key, $value) !== false;
+    }
+}
+```
+
+### 4. Use Services in Controllers
+```php
+class MyController extends Controller
+{
+    public function actionWpInit()
+    {
+        // Initialize services
+        new \App\Services\UserService();
+    }
+
+    public function actionUserRegister($userId)
+    {
+        // Access service via magic property
+        $displayName = $this->userService->getDisplayName($userId);
+        
+        // Update user meta via service
+        $this->userService->updateUserMeta($userId, 'welcome_sent', true);
+    }
+}
+```
+
+### 5. Create Your Models
 ```php
 // src/Models/CustomPost.php
 <?php
@@ -206,7 +269,7 @@ class CustomPost extends Model
 ## 🎯 Operation CWAL Targets
 
 - ✅ **Plugin MVP in under 30 minutes**
-- ✅ **Enterprise plugin architecture from day 1**
+- ✅ **Professional plugin architecture from day 1**
 - ✅ **Zero WordPress procedural code**
 - ✅ **Testable, maintainable, scalable**
 - ✅ **Modern PHP development experience**
@@ -214,6 +277,8 @@ class CustomPost extends Model
 ## 📚 Documentation & Support
 
 - **[Complete Documentation](docs/)** - Comprehensive framework guide
+- **[Services Guide](docs/services.md)** - Service layer and dependency injection
+- **[Auto-Hook Registration](docs/auto-hooks.md)** - Automatic WordPress hook registration
 - **[Quick Start Guide](docs/getting-started.md)** - Get building immediately
 - **[API Reference](docs/api/core.md)** - Full framework reference
 - **[Plugin Lifecycle](docs/PLUGIN_LIFECYCLE.md)** - Install/uninstall hooks

@@ -47,6 +47,7 @@ show_usage() {
     echo ""
     echo -e "${GREEN}📦 Code Generation:${NC}"
     echo "  make:controller <name>      Create a new controller"
+    echo "  make:service <name>         Create a new service"
     echo "  make:model <name>           Create a new model"
     echo "  make:view <name>            Create a new view template"
     echo "  make:migration <name>       Create a new database migration"
@@ -71,6 +72,7 @@ show_usage() {
     echo -e "${GREEN}Examples:${NC}"
     echo "  adz init"
     echo "  adz make:controller PostController"
+    echo "  adz make:service EmailService"
     echo "  adz make:model User --migration"
     echo "  adz make:view posts/index"
     echo "  adz migrate"
@@ -123,6 +125,7 @@ init_project() {
     
     # Create directory structure
     ensure_dir "src/controllers"
+    ensure_dir "src/services"
     ensure_dir "src/models"
     ensure_dir "src/views"
     ensure_dir "config"
@@ -154,6 +157,7 @@ init_project() {
     
     # Copy example files
     cp "$STUBS_DIR/controllers/ExampleController.php" "$PROJECT_DIR/src/controllers/"
+    cp -r "$STUBS_DIR/src/Services/"* "$PROJECT_DIR/src/services/" 2>/dev/null || true
     cp "$STUBS_DIR/models/ExampleModel.php" "$PROJECT_DIR/src/models/"
     cp "$STUBS_DIR/views/example.php" "$PROJECT_DIR/src/views/"
     cp "$STUBS_DIR/config/config.php" "$PROJECT_DIR/config/"
@@ -521,6 +525,93 @@ EOF
     log_info "Run 'adz migrate' to execute pending migrations"
 }
 
+# Generate Service
+make_service() {
+    local name="$1"
+    
+    if [[ -z "$name" ]]; then
+        log_error "Service name is required"
+        echo "Usage: adz make:service <ServiceName>"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    # Ensure Service suffix
+    if [[ ! "$name" =~ Service$ ]]; then
+        name="${name}Service"
+    fi
+    
+    ensure_dir "src/services"
+    
+    local service_file="src/services/$name.php"
+    
+    if [[ -f "$service_file" ]]; then
+        log_warning "Service already exists: $service_file"
+        read -p "Overwrite? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Generate service content
+    cat > "$service_file" << EOF
+<?php
+
+namespace App\\Services;
+
+use Adz\\Core\\Service;
+
+/**
+ * $name - Handle business logic for ${name%Service}
+ */
+class $name extends Service
+{
+    /**
+     * Define service dependencies (optional)
+     * 
+     * @return array Array of service names this service depends on
+     */
+    protected function dependencies(): array
+    {
+        return [
+            // Example: 'user', 'email'
+        ];
+    }
+
+    /**
+     * Example method - customize based on your needs
+     */
+    public function process(): bool
+    {
+        // Your business logic here
+        return true;
+    }
+
+    /**
+     * Example method with dependency usage
+     */
+    public function processWithDependency(): array
+    {
+        // Access other services through dependency injection
+        // Example: \$this->userService->getDisplayName(\$userId);
+        
+        return [
+            'status' => 'success',
+            'message' => 'Processing completed'
+        ];
+    }
+}
+EOF
+    
+    log_success "Service created: $service_file"
+    log_info "Initialize this service in your controller with: new \\App\\Services\\$name();"
+}
+
 # Proxy other commands to existing functionality if available
 proxy_command() {
     local command="$1"
@@ -572,6 +663,9 @@ main() {
             ;;
         "make:migration")
             make_migration "$2"
+            ;;
+        "make:service")
+            make_service "$2"
             ;;
         "build"|"build:assets"|"build:watch"|"build:zip"|"test"|"test:unit"|"test:coverage")
             proxy_command "$@"
