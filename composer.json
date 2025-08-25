@@ -1,6 +1,6 @@
 {
     "name": "adzadzadz/wp-plugin-framework",
-    "description": "The intuitive MVC framework for WordPress plugin development",
+    "description": "Modern MVC framework for WordPress plugin development - Build professional plugins with clean architecture",
     "type": "library",
     "keywords": [
         "wordpress",
