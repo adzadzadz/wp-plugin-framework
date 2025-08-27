@@ -8,7 +8,7 @@ namespace AdzWP\Core;
  * Provides centralized asset management with Bootstrap 5 integration,
  * context-aware loading, and WordPress best practices.
  */
-class AssetManager extends Core
+class AssetManager
 {
     /**
      * Registered assets
