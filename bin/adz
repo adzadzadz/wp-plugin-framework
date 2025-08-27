@@ -11,9 +11,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Detect framework installation
-if [[ -f "vendor/adz/wp-plugin-framework/bin/adz" ]]; then
-    # Running from project directory
-    FRAMEWORK_DIR="vendor/adz/wp-plugin-framework"
+if [[ -f "vendor/adzadzadz/wp-plugin-framework/bin/adz" ]]; then
+    # Running from project directory with composer-installed framework
+    FRAMEWORK_DIR="vendor/adzadzadz/wp-plugin-framework"
     PROJECT_DIR="."
 elif [[ -f "../../../bin/adz" ]]; then
     # Running from vendor/bin/adz
@@ -23,8 +23,12 @@ elif [[ "$(basename "$(dirname "$0")")" == "bin" ]]; then
     # Running from framework's bin directory (development/CI)
     FRAMEWORK_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
     PROJECT_DIR="."
+elif [[ "$(basename "$0")" == "adz" && -f "vendor/adzadzadz/wp-plugin-framework/composer.json" ]]; then
+    # Running from copied adz file in project root
+    FRAMEWORK_DIR="vendor/adzadzadz/wp-plugin-framework"
+    PROJECT_DIR="."
 else
-    echo -e "${RED}✗${NC} ADZ Framework not found. Please run 'composer require adz/wp-plugin-framework' first."
+    echo -e "${RED}✗${NC} ADZ Framework not found. Please run 'composer require adzadzadz/wp-plugin-framework' first."
     exit 1
 fi
 

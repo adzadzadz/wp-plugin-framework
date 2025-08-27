@@ -58,9 +58,7 @@
         "post-update-cmd": [
             "@create-adz-command"
         ],
-        "create-adz-command": [
-            "php -r \"if (file_exists('vendor/adzadzadz/wp-plugin-framework/bin/adz') && !file_exists('adz')) { if (PHP_OS_FAMILY === 'Windows') { copy('vendor/adzadzadz/wp-plugin-framework/bin/adz', 'adz.bat'); } else { symlink('vendor/adzadzadz/wp-plugin-framework/bin/adz', 'adz'); chmod('adz', 0755); } echo 'ADZ command created in project root\\n'; }\""
-        ]
+        "create-adz-command": "AdzWP\\Scripts\\ComposerScripts::copyAdzCommand"
     },
     "support": {
         "issues": "https://github.com/adzadzadz/wp-plugin-framework/issues",

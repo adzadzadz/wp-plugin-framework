@@ -87,7 +87,9 @@ class PluginZipBuilder {
             /^\.gitattributes$/,
             /^phpunit\.xml$/,
             /^webpack\.config\.js$/,
-            /^gulpfile\.js$/
+            /^gulpfile\.js$/,
+            /^adz$/,
+            /^adz\.bat$/
         ];
 
         return !excludePatterns.some(pattern => pattern.test(relativePath));
