@@ -110,6 +110,8 @@ src/
 - **MVC pattern** - Separate concerns like a pro
 - **Service layer** - Reusable business logic with dependency injection
 - **Auto-hook registration** - Methods automatically become WordPress hooks
+- **Automatic admin pages** - `adminPage{Name}()` methods create admin pages automatically
+- **Context-aware methods** - `admin{Name}()` and `frontend{Name}()` run only where needed
 - **ORM-style models** - Database interactions made easy
 - **Dependency injection** - Clean, testable code
 - **Event system** - WordPress hooks without the mess
@@ -183,6 +185,36 @@ class MyAwesomeController extends Controller
         // This runs with priority 20
         // WordPress receives 0 arguments (priority param excluded)
         add_menu_page('My Plugin', 'My Plugin', 'manage_options', 'my-plugin', [$this, 'renderPage']);
+    }
+
+    /**
+     * Automatic admin page creation - creates menu and handles display
+     * @page_title My Plugin Settings
+     * @menu_title Settings
+     * @icon_url dashicons-admin-settings
+     */
+    public function adminPageSettings()
+    {
+        echo '<div class="wrap">';
+        echo '<h1>My Plugin Settings</h1>';
+        echo '<p>This admin page was created automatically!</p>';
+        echo '</div>';
+    }
+
+    /**
+     * Admin-only method - runs only in WordPress admin
+     */
+    public function adminInitializeSettings()
+    {
+        register_setting('my_plugin_settings', 'my_plugin_option');
+    }
+
+    /**
+     * Frontend-only method - runs only on site frontend
+     */
+    public function frontendEnqueueScripts()
+    {
+        wp_enqueue_script('my-plugin-frontend', 'script.js');
     }
 }
 ```
@@ -279,6 +311,7 @@ class CustomPost extends Model
 - **[Complete Documentation](docs/)** - Comprehensive framework guide
 - **[Services Guide](docs/services.md)** - Service layer and dependency injection
 - **[Auto-Hook Registration](docs/auto-hooks.md)** - Automatic WordPress hook registration
+- **[Controller Automatic Methods](docs/controller-automatic-methods.md)** - Admin pages, admin/frontend methods
 - **[Quick Start Guide](docs/getting-started.md)** - Get building immediately
 - **[API Reference](docs/api/core.md)** - Full framework reference
 - **[Plugin Lifecycle](docs/PLUGIN_LIFECYCLE.md)** - Install/uninstall hooks

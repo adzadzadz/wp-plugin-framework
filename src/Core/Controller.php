@@ -167,6 +167,9 @@ class Controller extends Core {
      * Automatically register hooks based on method naming conventions
      * Methods starting with 'action' will be registered as actions
      * Methods starting with 'filter' will be registered as filters
+     * Methods starting with 'adminPage' will create admin pages
+     * Methods starting with 'admin' will run only in admin
+     * Methods starting with 'frontend' will run only in frontend
      */
     protected function autoRegisterHooks()
     {
@@ -178,6 +181,24 @@ class Controller extends Core {
             
             // Skip magic methods and constructor
             if (strpos($methodName, '__') === 0 || $methodName === 'autoRegisterHooks') {
+                continue;
+            }
+            
+            // Handle adminPage methods: adminPageSettings, adminPageUsers, etc.
+            if (strpos($methodName, 'adminPage') === 0 && strlen($methodName) > 9) {
+                $this->registerAdminPage($method);
+                continue;
+            }
+            
+            // Handle admin methods: adminSettings, adminUsers, etc.
+            if (strpos($methodName, 'admin') === 0 && strlen($methodName) > 5 && strpos($methodName, 'adminPage') !== 0) {
+                $this->registerAdminMethod($method);
+                continue;
+            }
+            
+            // Handle frontend methods: frontendSettings, frontendUsers, etc.
+            if (strpos($methodName, 'frontend') === 0 && strlen($methodName) > 8) {
+                $this->registerFrontendMethod($method);
                 continue;
             }
             
@@ -284,6 +305,124 @@ class Controller extends Core {
         }
         
         return null; // No priority parameter found
+    }
+
+    /**
+     * Register an admin page method
+     * Creates admin menu page and handles display automatically
+     */
+    protected function registerAdminPage(\ReflectionMethod $method)
+    {
+        $methodName = $method->getName();
+        $pageName = substr($methodName, 9); // Remove 'adminPage' prefix
+        
+        // Register the admin_menu action to create the page
+        add_action('admin_menu', function() use ($method, $methodName, $pageName) {
+            $pageConfig = $this->getAdminPageConfig($method, $pageName);
+            
+            if ($pageConfig['parent']) {
+                add_submenu_page(
+                    $pageConfig['parent'],
+                    $pageConfig['page_title'],
+                    $pageConfig['menu_title'],
+                    $pageConfig['capability'],
+                    $pageConfig['menu_slug'],
+                    [$this, $methodName]
+                );
+            } else {
+                add_menu_page(
+                    $pageConfig['page_title'],
+                    $pageConfig['menu_title'],
+                    $pageConfig['capability'],
+                    $pageConfig['menu_slug'],
+                    [$this, $methodName],
+                    $pageConfig['icon_url'],
+                    $pageConfig['position']
+                );
+            }
+        });
+    }
+
+    /**
+     * Get admin page configuration from method docblock or defaults
+     */
+    protected function getAdminPageConfig(\ReflectionMethod $method, $pageName)
+    {
+        $docComment = $method->getDocComment() ?: '';
+        
+        // Default configuration
+        $config = [
+            'page_title' => ucwords(str_replace(['_', '-'], ' ', $this->convertMethodNameToHook($pageName))),
+            'menu_title' => ucwords(str_replace(['_', '-'], ' ', $this->convertMethodNameToHook($pageName))),
+            'capability' => 'manage_options',
+            'menu_slug' => $this->convertMethodNameToHook($pageName),
+            'icon_url' => 'dashicons-admin-generic',
+            'position' => null,
+            'parent' => null
+        ];
+        
+        // Parse docblock for configuration
+        if (preg_match('/@page_title\s+(.+)/', $docComment, $matches)) {
+            $config['page_title'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/@menu_title\s+(.+)/', $docComment, $matches)) {
+            $config['menu_title'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/@capability\s+(.+)/', $docComment, $matches)) {
+            $config['capability'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/@menu_slug\s+(.+)/', $docComment, $matches)) {
+            $config['menu_slug'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/@icon_url\s+(.+)/', $docComment, $matches)) {
+            $config['icon_url'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/@position\s+(\d+)/', $docComment, $matches)) {
+            $config['position'] = (int) $matches[1];
+        }
+        
+        if (preg_match('/@parent\s+(.+)/', $docComment, $matches)) {
+            $config['parent'] = trim($matches[1]);
+        }
+        
+        return $config;
+    }
+
+    /**
+     * Register an admin-only method
+     * Method will only run when in admin area
+     */
+    protected function registerAdminMethod(\ReflectionMethod $method)
+    {
+        $methodName = $method->getName();
+        
+        // Wrap the method call in admin check
+        add_action('wp_loaded', function() use ($methodName) {
+            if (is_admin()) {
+                $this->$methodName();
+            }
+        });
+    }
+
+    /**
+     * Register a frontend-only method
+     * Method will only run when not in admin area
+     */
+    protected function registerFrontendMethod(\ReflectionMethod $method)
+    {
+        $methodName = $method->getName();
+        
+        // Wrap the method call in frontend check
+        add_action('wp_loaded', function() use ($methodName) {
+            if (!is_admin()) {
+                $this->$methodName();
+            }
+        });
     }
 
 }
