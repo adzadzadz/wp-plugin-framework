@@ -49,7 +49,17 @@
         "test:unit": "phpunit --testsuite=Unit",
         "test:coverage": "phpunit --coverage-html coverage",
         "post-create-project-cmd": [
-            "php bin/setup-plugin"
+            "php bin/setup-plugin",
+            "composer update"
+        ],
+        "post-install-cmd": [
+            "@create-adz-command"
+        ],
+        "post-update-cmd": [
+            "@create-adz-command"
+        ],
+        "create-adz-command": [
+            "php -r \"if (file_exists('vendor/adzadzadz/wp-plugin-framework/bin/adz') && !file_exists('adz')) { if (PHP_OS_FAMILY === 'Windows') { copy('vendor/adzadzadz/wp-plugin-framework/bin/adz', 'adz.bat'); } else { symlink('vendor/adzadzadz/wp-plugin-framework/bin/adz', 'adz'); chmod('adz', 0755); } echo 'ADZ command created in project root\\n'; }\""
         ]
     },
     "support": {
