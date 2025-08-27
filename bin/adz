@@ -1429,21 +1429,21 @@ make_template() {
     fi
     
     local template_dir="src/views/templates"
-    ensure_dir "\$template_dir"
+    ensure_dir "$template_dir"
     
-    local template_file="\$template_dir/\$name.php"
+    local template_file="$template_dir/$name.php"
     
-    if [[ -f "\$template_file" ]]; then
-        log_warning "Template already exists: \$template_file"
+    if [[ -f "$template_file" ]]; then
+        log_warning "Template already exists: $template_file"
         read -p "Overwrite? (y/N): " -n 1 -r
         echo
-        if [[ ! \$REPLY =~ ^[Yy]$ ]]; then
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             exit 0
         fi
     fi
     
     # Generate template content
-    cat > "\$template_file" << 'EOF'
+    cat > "$template_file" << 'EOF'
 <?php
 /**
  * Template Layout
@@ -1503,7 +1503,7 @@ if (!defined('ABSPATH')) {
 </html>
 EOF
     
-    log_success "Template created: \$template_file"
+    log_success "Template created: $template_file"
     log_info "Usage: View::render('viewname', \$data, true, 'templates/$name')"
 }
 
