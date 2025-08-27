@@ -121,4 +121,13 @@ class Adz {
   {
     self::config()->set($key, $value);
   }
+  
+  /**
+   * Initialize framework components
+   */
+  public static function init(): void
+  {
+    // Initialize AssetManager with Bootstrap 5 support
+    \AdzWP\Core\AssetManager::init();
+  }
 }

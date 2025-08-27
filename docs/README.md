@@ -13,14 +13,15 @@ Welcome to the ADZ WordPress Plugin Framework documentation. This framework prov
 - [Plugin Lifecycle Management](PLUGIN_LIFECYCLE.md) - Install, activate, deactivate, uninstall hooks
 - [Controllers](controllers.md) - MVC controller system with automatic hook registration
 - [Models & Database](models-database.md) - Database abstraction and ORM-like functionality
-- [Views & Templates](views.md) - Template system and view rendering
+- [Views & Layouts](views-layouts.md) - Template system with Bootstrap 5 integration
+- [Asset Management](asset-management.md) - CSS/JS management with context-aware loading
 - [Configuration](configuration.md) - Configuration management system
 
 ### Advanced Features
 - [Dependency Management](dependency-management.md) - Automatic plugin dependency installation
+- [CLI Commands](cli-commands.md) - Complete command-line interface
 - [Security](security.md) - Security features and best practices
 - [Testing](testing.md) - Unit testing and integration testing
-- [Console Commands](console.md) - CLI commands and scaffolding tools
 
 ### API Reference
 - [Core Classes](api/core.md) - Core framework classes
@@ -61,6 +62,8 @@ new App\Controllers\ExampleController();
 - **MVC Architecture** - Clean separation of concerns
 - **Automatic Hook Registration** - Declarative hook management
 - **Plugin Lifecycle Management** - Complete install/uninstall workflow
+- **View System with Layouts** - Structured templates with Bootstrap 5 integration
+- **Asset Management** - Context-aware CSS/JS loading with CDN support
 - **Dependency Management** - Automatic plugin installation
 - **Database Abstraction** - Eloquent-style query builder
 - **Security Features** - Built-in sanitization and validation

@@ -54,7 +54,7 @@ show_usage() {
     echo "  make:service <name>         Create a new service"
     echo "  make:model <name>           Create a new model"
     echo "  make:view <name>            Create a new view template"
-    echo "  make:template <name>        Create a new template layout"
+    echo "  make:layout <name>          Create a new layout template"
     echo "  make:migration <name>       Create a new database migration"
     echo ""
     echo -e "${GREEN}🗄️  Database Management:${NC}"
@@ -63,10 +63,22 @@ show_usage() {
     echo "  migrate:reset               Reset all migrations"
     echo "  migrate:status              Show migration status"
     echo ""
+    echo -e "${GREEN}🎨 Asset Management:${NC}"
+    echo "  assets:enable               Enable Bootstrap 5 assets"
+    echo "  assets:disable              Disable Bootstrap 5 assets"
+    echo "  assets:list                 List registered assets"
+    echo ""
+    echo -e "${GREEN}🧹 Maintenance:${NC}"
+    echo "  cache:clear                 Clear framework cache"
+    echo "  logs:clear                  Clear application logs"
+    echo "  config:cache                Cache configuration files"
+    echo "  config:clear                Clear configuration cache"
+    echo ""
     echo -e "${GREEN}🔧 Framework Commands:${NC}"
     echo "  test                        Run framework tests"
     echo "  test:unit                   Run unit tests only"
     echo "  test:coverage               Run tests with coverage"
+    echo "  health:check                Run system health checks"
     echo ""
     echo -e "${GREEN}📦 Build & Distribution:${NC}"
     echo "  build                       Build and minify assets, create installable zip"
@@ -75,12 +87,27 @@ show_usage() {
     echo "  build:zip                   Create installable plugin zip"
     echo ""
     echo -e "${GREEN}Examples:${NC}"
-    echo "  adz init"
-    echo "  adz make:controller PostController"
-    echo "  adz make:service EmailService"
-    echo "  adz make:model User --migration"
-    echo "  adz make:view posts/index"
-    echo "  adz migrate"
+    echo "  ${BLUE}Project Setup:${NC}"
+    echo "    adz init                              # Initialize new project"
+    echo ""
+    echo "  ${BLUE}Code Generation:${NC}"
+    echo "    adz make:controller PostController    # Create controller"
+    echo "    adz make:controller Admin/UserController  # Namespaced controller"
+    echo "    adz make:service EmailService         # Create service"
+    echo "    adz make:model User --migration       # Create model with migration"
+    echo "    adz make:view posts/index             # Create view template"
+    echo "    adz make:layout admin                 # Create layout template"
+    echo "    adz make:migration create_users_table # Create database migration"
+    echo ""
+    echo "  ${BLUE}Database & Assets:${NC}"
+    echo "    adz migrate                           # Run pending migrations"
+    echo "    adz assets:disable                    # Disable Bootstrap assets"
+    echo "    adz health:check                      # System diagnostics"
+    echo ""
+    echo "  ${BLUE}View Usage:${NC}"
+    echo "    View::render('posts/index', \$data)                    # With layout"
+    echo "    View::render('posts/index', \$data, true, false)       # No layout"
+    echo "    View::render('posts/index', \$data, true, 'layouts/admin')  # Custom layout"
 }
 
 # Utility functions
@@ -133,6 +160,7 @@ init_project() {
     ensure_dir "src/services"
     ensure_dir "src/models"
     ensure_dir "src/views"
+    ensure_dir "src/views/layouts"
     ensure_dir "config"
     ensure_dir "assets/css"
     ensure_dir "assets/js"
@@ -1412,14 +1440,14 @@ EOF
     echo "  - Call methods: \$result = \$service->processData(\$data);"
 }
 
-# Generate Template
-make_template() {
+# Generate Layout
+make_layout() {
     local name="$1"
     
     if [[ -z "$name" ]]; then
-        log_error "Template name is required"
-        echo "Usage: adz make:template <templatename>"
-        echo "Example: adz make:template admin"
+        log_error "Layout name is required"
+        echo "Usage: adz make:layout <layoutname>"
+        echo "Example: adz make:layout admin"
         exit 1
     fi
     
@@ -1428,13 +1456,13 @@ make_template() {
         exit 1
     fi
     
-    local template_dir="src/views/templates"
+    local template_dir="src/views/layouts"
     ensure_dir "$template_dir"
     
     local template_file="$template_dir/$name.php"
     
     if [[ -f "$template_file" ]]; then
-        log_warning "Template already exists: $template_file"
+        log_warning "Layout already exists: $template_file"
         read -p "Overwrite? (y/N): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -1442,69 +1470,143 @@ make_template() {
         fi
     fi
     
-    # Generate template content
-    cat > "$template_file" << 'EOF'
+    # Generate layout content
+    cat > "$template_file" << EOF
 <?php
 /**
- * Template Layout
+ * Layout Template: $name
  * 
- * This template wraps view content and provides the overall page structure.
+ * This layout wraps view content in a structured section.
+ * Layouts are lightweight wrappers that don't include full HTML structure.
  * 
  * Available variables:
  * - \$content: The rendered view content
- * - \$title: Page title (if set)
- * - \$header_content: Header content (if set)
- * - \$footer_content: Footer content (if set)
+ * - \$title: Page/section title (if set)
  * - All variables passed from the controller
+ * 
+ * Usage: View::render('viewname', \$data, true, 'layouts/$name')
+ * Disable: View::render('viewname', \$data, true, false)
  */
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Get plugin configuration for context
+\$config = \\AdzWP\\Core\\Config::getInstance();
+\$plugin_name = \$config->get('plugin.name', 'ADZ Plugin');
+\$plugin_slug = \$config->get('plugin.slug', 'adz-plugin');
 ?>
-<!DOCTYPE html>
-<html <?php language_attributes(); ?>>
-<head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
+<section id="<?php echo esc_attr(\$plugin_slug . '-' . '$name'); ?>" class="adz-template adz-template--$name">
     <?php if (isset(\$title)): ?>
-        <title><?php echo esc_html(\$title); ?> | <?php bloginfo('name'); ?></title>
+        <header class="template-header mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="template-title h4 mb-0"><?php echo esc_html(\$title); ?></h2>
+                
+                <?php if (isset(\$breadcrumbs) && is_array(\$breadcrumbs)): ?>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <?php foreach (\$breadcrumbs as \$crumb): ?>
+                                <?php if (isset(\$crumb['url'])): ?>
+                                    <li class="breadcrumb-item">
+                                        <a href="<?php echo esc_url(\$crumb['url']); ?>">
+                                            <?php echo esc_html(\$crumb['label']); ?>
+                                        </a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="breadcrumb-item active" aria-current="page">
+                                        <?php echo esc_html(\$crumb['label']); ?>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </ol>
+                    </nav>
+                <?php endif; ?>
+            </div>
+            
+            <?php if (isset(\$subtitle)): ?>
+                <p class="template-subtitle text-muted mt-2 mb-0"><?php echo esc_html(\$subtitle); ?></p>
+            <?php endif; ?>
+        </header>
     <?php endif; ?>
     
-    <?php wp_head(); ?>
-</head>
-<body <?php body_class(); ?>>
-    <?php wp_body_open(); ?>
+    <?php if (isset(\$alerts) && is_array(\$alerts)): ?>
+        <div class="template-alerts mb-3">
+            <?php foreach (\$alerts as \$alert): ?>
+                <div class="alert alert-<?php echo esc_attr(\$alert['type'] ?? 'info'); ?> <?php echo isset(\$alert['dismissible']) && \$alert['dismissible'] ? 'alert-dismissible fade show' : ''; ?>">
+                    <?php if (isset(\$alert['icon'])): ?>
+                        <i class="<?php echo esc_attr(\$alert['icon']); ?> me-2"></i>
+                    <?php endif; ?>
+                    
+                    <?php echo wp_kses_post(\$alert['message']); ?>
+                    
+                    <?php if (isset(\$alert['dismissible']) && \$alert['dismissible']): ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
     
-    <div class="site-wrapper">
-        <?php if (isset(\$header_content)): ?>
-            <header class="site-header">
-                <?php echo wp_kses_post(\$header_content); ?>
-            </header>
-        <?php endif; ?>
-        
-        <main class="site-main">
-            <div class="container">
-                <?php echo \$content; ?>
+    <main class="template-content">
+        <?php if (isset(\$content)): ?>
+            <?php echo \$content; ?>
+        <?php else: ?>
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No content provided to template.
             </div>
-        </main>
-        
-        <?php if (isset(\$footer_content)): ?>
-            <footer class="site-footer">
-                <?php echo wp_kses_post(\$footer_content); ?>
-            </footer>
         <?php endif; ?>
-    </div>
+    </main>
     
-    <?php wp_footer(); ?>
-</body>
-</html>
+    <?php if (isset(\$sidebar_content)): ?>
+        <aside class="template-sidebar mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <?php echo wp_kses_post(\$sidebar_content); ?>
+                </div>
+            </div>
+        </aside>
+    <?php endif; ?>
+    
+    <?php if (isset(\$actions) && is_array(\$actions)): ?>
+        <footer class="template-actions mt-4 pt-3 border-top">
+            <div class="d-flex gap-2 flex-wrap">
+                <?php foreach (\$actions as \$action): ?>
+                    <a href="<?php echo esc_url(\$action['url']); ?>" 
+                       class="btn <?php echo esc_attr(\$action['class'] ?? 'btn-secondary'); ?>"
+                       <?php if (isset(\$action['target'])): ?>target="<?php echo esc_attr(\$action['target']); ?>"<?php endif; ?>
+                       <?php if (isset(\$action['data']) && is_array(\$action['data'])): ?>
+                           <?php foreach (\$action['data'] as \$key => \$value): ?>
+                               data-<?php echo esc_attr(\$key); ?>="<?php echo esc_attr(\$value); ?>"
+                           <?php endforeach; ?>
+                       <?php endif; ?>>
+                        <?php if (isset(\$action['icon'])): ?>
+                            <i class="<?php echo esc_attr(\$action['icon']); ?> me-1"></i>
+                        <?php endif; ?>
+                        <?php echo esc_html(\$action['label']); ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </footer>
+    <?php endif; ?>
+</section>
+
+<?php
+/**
+ * Action hook for adding custom content after the template
+ * 
+ * @param string \$template_name Template name
+ * @param array \$template_data All data passed to template
+ */
+do_action('adz_after_layout_$name', '$name', get_defined_vars());
+?>
 EOF
     
-    log_success "Template created: $template_file"
-    log_info "Usage: View::render('viewname', \$data, true, 'templates/$name')"
+    log_success "Layout created: $template_file"
+    log_info "Usage: View::render('viewname', \$data, true, 'layouts/$name')"
 }
 
 # Proxy other commands to existing functionality if available
@@ -1562,8 +1664,8 @@ main() {
         "make:service")
             make_service "$2"
             ;;
-        "make:template")
-            make_template "$2"
+        "make:layout")
+            make_layout "$2"
             ;;
         "build"|"build:assets"|"build:watch"|"build:zip"|"test"|"test:unit"|"test:coverage")
             proxy_command "$@"
