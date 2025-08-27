@@ -8,7 +8,7 @@ class Exception extends \Exception
     protected $httpCode = 500;
     protected $shouldLog = true;
     
-    public function __construct($message = "", $code = 0, \Throwable $previous = null, array $context = [])
+    public function __construct($message = "", $code = 0, ?\Throwable $previous = null, array $context = [])
     {
         parent::__construct($message, $code, $previous);
         $this->context = $context;
@@ -86,7 +86,7 @@ class ValidationException extends Exception
     protected $httpCode = 400;
     protected $errors = [];
     
-    public function __construct($message = "Validation failed", array $errors = [], $code = 0, \Throwable $previous = null)
+    public function __construct($message = "Validation failed", array $errors = [], $code = 0, ?\Throwable $previous = null)
     {
         $this->errors = $errors;
         
@@ -130,7 +130,7 @@ class NotFoundException extends Exception
 {
     protected $httpCode = 404;
     
-    public function __construct($message = "Resource not found", $code = 0, \Throwable $previous = null, array $context = [])
+    public function __construct($message = "Resource not found", $code = 0, ?\Throwable $previous = null, array $context = [])
     {
         parent::__construct($message, $code, $previous, $context);
     }
@@ -140,7 +140,7 @@ class UnauthorizedException extends Exception
 {
     protected $httpCode = 401;
     
-    public function __construct($message = "Unauthorized access", $code = 0, \Throwable $previous = null, array $context = [])
+    public function __construct($message = "Unauthorized access", $code = 0, ?\Throwable $previous = null, array $context = [])
     {
         parent::__construct($message, $code, $previous, $context);
     }
@@ -150,7 +150,7 @@ class ForbiddenException extends Exception
 {
     protected $httpCode = 403;
     
-    public function __construct($message = "Access forbidden", $code = 0, \Throwable $previous = null, array $context = [])
+    public function __construct($message = "Access forbidden", $code = 0, ?\Throwable $previous = null, array $context = [])
     {
         parent::__construct($message, $code, $previous, $context);
     }
@@ -160,7 +160,7 @@ class DatabaseException extends Exception
 {
     protected $query;
     
-    public function __construct($message = "Database error", $query = '', $code = 0, \Throwable $previous = null)
+    public function __construct($message = "Database error", $query = '', $code = 0, ?\Throwable $previous = null)
     {
         $this->query = $query;
         
