@@ -50,6 +50,7 @@ show_usage() {
     echo "  make:service <name>         Create a new service"
     echo "  make:model <name>           Create a new model"
     echo "  make:view <name>            Create a new view template"
+    echo "  make:template <name>        Create a new template layout"
     echo "  make:migration <name>       Create a new database migration"
     echo ""
     echo -e "${GREEN}🗄️  Database Management:${NC}"
@@ -252,6 +253,10 @@ make_controller() {
     if [[ -z "$name" ]]; then
         log_error "Controller name is required"
         echo "Usage: adz make:controller <ControllerName>"
+        echo "Examples:"
+        echo "  adz make:controller PostController"
+        echo "  adz make:controller Admin/UserController"
+        echo "  adz make:controller Api/V1/AuthController"
         exit 1
     fi
     
@@ -302,36 +307,269 @@ make_controller() {
 
 namespace $namespace;
 
-use Adz\\WordPress\\WordPressController as Controller;
+use AdzWP\\Core\\Controller;
+use AdzWP\\Core\\View;
 
+/**
+ * $name - Handle ${name%Controller} related functionality
+ * 
+ * Controllers handle HTTP requests and coordinate between models and views.
+ * They contain the application logic and decide what response to send back.
+ */
 class $name extends Controller
 {
+    /**
+     * WordPress action hooks
+     * 
+     * Define WordPress actions that this controller should hook into.
+     * Format: 'hook_name' => 'method_name'
+     * 
+     * Common hooks:
+     * - 'init' => 'initialize' (WordPress init)
+     * - 'wp_loaded' => 'onWordPressLoaded'
+     * - 'admin_menu' => 'addAdminMenu'
+     * - 'wp_enqueue_scripts' => 'enqueueScripts'
+     * - 'wp_ajax_action_name' => 'handleAjaxRequest'
+     * - 'wp_ajax_nopriv_action_name' => 'handlePublicAjaxRequest'
+     */
     public \$actions = [
-        'init' => 'initialize'
+        'init' => 'initialize',
+        // 'wp_enqueue_scripts' => 'enqueueScripts',
+        // 'admin_menu' => 'addAdminMenu',
     ];
 
-    public \$filters = [];
+    /**
+     * WordPress filter hooks
+     * 
+     * Define WordPress filters that this controller should hook into.
+     * Format: 'filter_name' => 'method_name'
+     * 
+     * Common filters:
+     * - 'the_content' => 'modifyContent'
+     * - 'wp_title' => 'modifyTitle'
+     * - 'body_class' => 'addBodyClasses'
+     */
+    public \$filters = [
+        // 'the_content' => 'modifyContent',
+        // 'body_class' => 'addBodyClasses',
+    ];
 
+    /**
+     * Controller initialization
+     * 
+     * This method is called when the controller is instantiated.
+     * Use it for any setup that needs to happen before WordPress hooks are registered.
+     */
     protected function bootstrap()
     {
-        // Additional initialization if needed
+        // Initialize services, set up dependencies, etc.
+        // Example: \$this->userService = new UserService();
     }
 
+    /**
+     * WordPress initialization hook
+     * 
+     * Called during WordPress 'init' action. Use this for functionality
+     * that needs WordPress to be fully loaded.
+     */
     public function initialize()
     {
         // WordPress initialization logic
         if (\$this->isAdmin()) {
             // Admin-specific initialization
+            \$this->initializeAdmin();
         }
         
         if (\$this->isFrontend()) {
             // Frontend-specific initialization
+            \$this->initializeFrontend();
         }
+        
+        // Common initialization for both admin and frontend
+        \$this->initializeCommon();
+    }
+
+    /**
+     * Admin-specific initialization
+     */
+    private function initializeAdmin()
+    {
+        // Admin dashboard functionality
+        // Example: add_action('admin_enqueue_scripts', [\$this, 'enqueueAdminScripts']);
+    }
+
+    /**
+     * Frontend-specific initialization
+     */
+    private function initializeFrontend()
+    {
+        // Frontend functionality
+        // Example: add_shortcode('my_shortcode', [\$this, 'handleShortcode']);
+    }
+
+    /**
+     * Common initialization for both admin and frontend
+     */
+    private function initializeCommon()
+    {
+        // Shared functionality
+        // Example: register custom post types, taxonomies, etc.
+    }
+
+    /**
+     * Example: Handle AJAX requests
+     * 
+     * To use this method, add to \$actions array:
+     * 'wp_ajax_my_action' => 'handleAjaxRequest'
+     * 'wp_ajax_nopriv_my_action' => 'handleAjaxRequest' (for non-logged-in users)
+     */
+    public function handleAjaxRequest()
+    {
+        // Verify nonce for security
+        if (!wp_verify_nonce(\$_POST['nonce'] ?? '', 'my_action_nonce')) {
+            wp_die('Security check failed', 'Error', ['response' => 403]);
+        }
+
+        // Process request
+        \$data = sanitize_text_field(\$_POST['data'] ?? '');
+        
+        // Return JSON response
+        wp_send_json_success([
+            'message' => 'Request processed successfully',
+            'data' => \$data
+        ]);
+    }
+
+    /**
+     * Example: Enqueue scripts and styles
+     * 
+     * To use this method, add to \$actions array:
+     * 'wp_enqueue_scripts' => 'enqueueScripts'
+     */
+    public function enqueueScripts()
+    {
+        // Enqueue JavaScript
+        wp_enqueue_script(
+            '$(echo "${name%Controller}" | tr '[:upper:]' '[:lower:]')-script',
+            plugin_dir_url(__FILE__) . '../assets/js/script.js',
+            ['jquery'],
+            '1.0.0',
+            true
+        );
+
+        // Enqueue CSS
+        wp_enqueue_style(
+            '$(echo "${name%Controller}" | tr '[:upper:]' '[:lower:]')-style',
+            plugin_dir_url(__FILE__) . '../assets/css/style.css',
+            [],
+            '1.0.0'
+        );
+
+        // Localize script for AJAX
+        wp_localize_script('$(echo "${name%Controller}" | tr '[:upper:]' '[:lower:]')-script', 'ajaxObject', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_action_nonce')
+        ]);
+    }
+
+    /**
+     * Example: Add admin menu page
+     * 
+     * To use this method, add to \$actions array:
+     * 'admin_menu' => 'addAdminMenu'
+     */
+    public function addAdminMenu()
+    {
+        add_options_page(
+            'My Plugin Settings',           // Page title
+            'My Plugin',                    // Menu title
+            'manage_options',               // Capability
+            'my-plugin-settings',           // Menu slug
+            [\$this, 'renderAdminPage']     // Callback function
+        );
+    }
+
+    /**
+     * Example: Render admin page
+     */
+    public function renderAdminPage()
+    {
+        \$data = [
+            'title' => 'Plugin Settings',
+            'settings' => get_option('my_plugin_settings', [])
+        ];
+        
+        // Render view with admin template
+        echo View::render('admin/settings', \$data, true, 'templates/admin');
+    }
+
+    /**
+     * Example: Handle shortcode
+     * 
+     * Usage: [my_shortcode title="Hello" content="World"]
+     */
+    public function handleShortcode(\$atts, \$content = '')
+    {
+        // Parse shortcode attributes
+        \$atts = shortcode_atts([
+            'title' => 'Default Title',
+            'class' => 'my-shortcode'
+        ], \$atts);
+
+        // Prepare data for view
+        \$data = [
+            'title' => sanitize_text_field(\$atts['title']),
+            'content' => wp_kses_post(\$content),
+            'class' => sanitize_html_class(\$atts['class'])
+        ];
+
+        // Return rendered view (don't echo for shortcodes)
+        return View::render('shortcodes/my-shortcode', \$data);
+    }
+
+    /**
+     * Example: Modify content filter
+     * 
+     * To use this method, add to \$filters array:
+     * 'the_content' => 'modifyContent'
+     */
+    public function modifyContent(\$content)
+    {
+        // Only modify content on single posts
+        if (!is_single()) {
+            return \$content;
+        }
+
+        // Add custom content before the post content
+        \$custom_content = '<div class="custom-content">Custom content here</div>';
+        
+        return \$custom_content . \$content;
+    }
+
+    /**
+     * Example: Add custom body classes
+     * 
+     * To use this method, add to \$filters array:
+     * 'body_class' => 'addBodyClasses'
+     */
+    public function addBodyClasses(\$classes)
+    {
+        // Add custom class based on condition
+        if (is_user_logged_in()) {
+            \$classes[] = 'logged-in-user';
+        }
+        
+        return \$classes;
     }
 }
 EOF
     
     log_success "Controller created: $controller_file"
+    log_info "Usage examples:"
+    echo "  - Register controller: new \\$namespace\\$name();"
+    echo "  - Add AJAX action: 'wp_ajax_my_action' => 'handleAjaxRequest'"
+    echo "  - Add admin menu: 'admin_menu' => 'addAdminMenu'"
+    echo "  - Enqueue scripts: 'wp_enqueue_scripts' => 'enqueueScripts'"
 }
 
 # Generate Model
@@ -342,6 +580,10 @@ make_model() {
     if [[ -z "$name" ]]; then
         log_error "Model name is required"
         echo "Usage: adz make:model <ModelName> [--migration]"
+        echo "Examples:"
+        echo "  adz make:model User"
+        echo "  adz make:model Post --migration"
+        echo "  adz make:model ProductCategory"
         exit 1
     fi
     
@@ -378,25 +620,277 @@ make_model() {
 
 namespace App\\Models;
 
-use Adz\\WordPress\\Model;
+use AdzWP\\Core\\Model;
 
+/**
+ * $name - Represents ${base_name} entities
+ * 
+ * Models handle data operations and business logic related to database entities.
+ * They provide an abstraction layer between your application and the database.
+ */
 class $name extends Model
 {
+    /**
+     * The table associated with the model
+     * 
+     * @var string
+     */
     protected \$table = '$table_name';
     
+    /**
+     * The primary key for the model
+     * 
+     * @var string
+     */
+    protected \$primaryKey = 'id';
+    
+    /**
+     * Indicates if the model should be timestamped
+     * 
+     * @var bool
+     */
+    public \$timestamps = true;
+    
+    /**
+     * The attributes that are mass assignable
+     * 
+     * Define which attributes can be mass-assigned using create() or fill() methods.
+     * This is a security feature to prevent mass assignment vulnerabilities.
+     * 
+     * @var array
+     */
     protected \$fillable = [
-        // Add fillable attributes here
+        // 'name',
+        // 'email',
+        // 'description',
+        // 'status',
     ];
     
+    /**
+     * The attributes that aren't mass assignable
+     * 
+     * Define which attributes should never be mass-assigned.
+     * Use either \$fillable (whitelist) or \$guarded (blacklist), not both.
+     * 
+     * @var array
+     */
     protected \$guarded = [
-        'id'
+        'id',
+        'created_at',
+        'updated_at',
     ];
     
-    // Add model relationships and methods here
+    /**
+     * The attributes that should be cast to native types
+     * 
+     * @var array
+     */
+    protected \$casts = [
+        // 'is_active' => 'boolean',
+        // 'settings' => 'array',
+        // 'published_at' => 'datetime',
+    ];
+    
+    /**
+     * The attributes that should be hidden for serialization
+     * 
+     * @var array
+     */
+    protected \$hidden = [
+        // 'password',
+        // 'remember_token',
+    ];
+
+    /**
+     * Example: Get all active records
+     * 
+     * Scope methods allow you to define reusable query constraints.
+     * Use scope methods to encapsulate common query patterns.
+     * 
+     * @param \\Illuminate\\Database\\Eloquent\\Builder \$query
+     * @return \\Illuminate\\Database\\Eloquent\\Builder
+     */
+    public function scopeActive(\$query)
+    {
+        return \$query->where('status', 'active');
+    }
+
+    /**
+     * Example: Get records created in the last N days
+     * 
+     * @param \\Illuminate\\Database\\Eloquent\\Builder \$query
+     * @param int \$days
+     * @return \\Illuminate\\Database\\Eloquent\\Builder
+     */
+    public function scopeRecent(\$query, \$days = 7)
+    {
+        return \$query->where('created_at', '>=', 
+            gmdate('Y-m-d H:i:s', strtotime("-{\$days} days")));
+    }
+
+    /**
+     * Example: Get full name attribute (accessor)
+     * 
+     * Accessors allow you to format Eloquent attribute values when you access them.
+     * Define an accessor by creating a getFooAttribute method.
+     * 
+     * Usage: \$model->full_name
+     * 
+     * @return string
+     */
+    public function getFullNameAttribute()
+    {
+        return \$this->first_name . ' ' . \$this->last_name;
+    }
+
+    /**
+     * Example: Set password attribute (mutator)
+     * 
+     * Mutators allow you to format Eloquent attribute values when you set them.
+     * Define a mutator by creating a setFooAttribute method.
+     * 
+     * Usage: \$model->password = 'plaintext';
+     * 
+     * @param string \$value
+     */
+    public function setPasswordAttribute(\$value)
+    {
+        \$this->attributes['password'] = password_hash(\$value, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * Example: One-to-many relationship
+     * 
+     * Define a one-to-many relationship. For example, a User has many Posts.
+     * 
+     * Usage: \$${base_name}->posts
+     * 
+     * @return \\Illuminate\\Database\\Eloquent\\Relations\\HasMany
+     */
+    public function posts()
+    {
+        return \$this->hasMany(PostModel::class, '${base_name}_id');
+    }
+
+    /**
+     * Example: Many-to-one (belongs to) relationship
+     * 
+     * Define a belongs-to relationship. For example, a Post belongs to a User.
+     * 
+     * Usage: \$${base_name}->user
+     * 
+     * @return \\Illuminate\\Database\\Eloquent\\Relations\\BelongsTo
+     */
+    public function user()
+    {
+        return \$this->belongsTo(UserModel::class, 'user_id');
+    }
+
+    /**
+     * Example: Many-to-many relationship
+     * 
+     * Define a many-to-many relationship. For example, a User has many Roles.
+     * 
+     * Usage: \$${base_name}->roles
+     * 
+     * @return \\Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany
+     */
+    public function roles()
+    {
+        return \$this->belongsToMany(
+            RoleModel::class, 
+            '${base_name}_roles', // pivot table name
+            '${base_name}_id',    // foreign key on pivot table
+            'role_id'         // related key on pivot table
+        );
+    }
+
+    /**
+     * Example: Custom query method
+     * 
+     * Custom methods can encapsulate complex business logic.
+     * 
+     * @param string \$status
+     * @return \\Illuminate\\Database\\Eloquent\\Collection
+     */
+    public function getByStatus(\$status)
+    {
+        return static::where('status', \$status)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Example: Create a new record with validation
+     * 
+     * @param array \$data
+     * @return static|false
+     */
+    public function createWithValidation(array \$data)
+    {
+        // Validate data
+        \$errors = \$this->validate(\$data);
+        if (!empty(\$errors)) {
+            return false;
+        }
+
+        // Create record
+        return static::create(\$data);
+    }
+
+    /**
+     * Example: Simple validation method
+     * 
+     * @param array \$data
+     * @return array Array of validation errors
+     */
+    protected function validate(array \$data)
+    {
+        \$errors = [];
+
+        // Example validations
+        if (empty(\$data['name'])) {
+            \$errors['name'] = 'Name is required';
+        }
+
+        if (!empty(\$data['email']) && !filter_var(\$data['email'], FILTER_VALIDATE_EMAIL)) {
+            \$errors['email'] = 'Invalid email format';
+        }
+
+        return \$errors;
+    }
+
+    /**
+     * Boot method - called when model is being booted
+     * 
+     * Use this method to register model event listeners or perform
+     * other initialization tasks.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Example: Automatically set slug when creating
+        static::creating(function (\$model) {
+            if (empty(\$model->slug) && !empty(\$model->name)) {
+                \$model->slug = sanitize_title(\$model->name);
+            }
+        });
+
+        // Example: Log when model is updated
+        static::updated(function (\$model) {
+            error_log("${name} updated: " . \$model->id);
+        });
+    }
 }
 EOF
     
     log_success "Model created: $model_file"
+    log_info "Usage examples:"
+    echo "  - Create: \$${base_name} = ${name}::create(\$data);"
+    echo "  - Find: \$${base_name} = ${name}::find(\$id);"
+    echo "  - Query: \$${base_name}s = ${name}::active()->recent(30)->get();"
+    echo "  - Relationship: \$${base_name}->posts()->where('status', 'published')->get();"
     
     # Create migration if requested
     if [[ "$create_migration" == "--migration" ]] || [[ "$3" == "--migration" ]]; then
@@ -411,6 +905,11 @@ make_view() {
     if [[ -z "$name" ]]; then
         log_error "View name is required"
         echo "Usage: adz make:view <path/viewname>"
+        echo "Examples:"
+        echo "  adz make:view dashboard"
+        echo "  adz make:view admin/users"
+        echo "  adz make:view partials/header"
+        echo "  adz make:view emails/welcome"
         exit 1
     fi
     
@@ -439,10 +938,27 @@ make_view() {
     cat > "$view_file" << 'EOF'
 <?php
 /**
- * View Template
+ * View Template: <?php echo basename("$name"); ?>
+
+ * 
+ * This view file contains the HTML markup and PHP logic for rendering content.
+ * Views should focus on presentation logic only - business logic belongs in controllers and services.
  * 
  * Available variables:
- * - All variables passed from the controller
+ * - All variables passed from the controller via View::render()
+ * - WordPress globals: $post, $wp_query, etc. (if applicable)
+ * 
+ * Security:
+ * - Always escape output using esc_html(), esc_attr(), wp_kses_post(), etc.
+ * - Use WordPress sanitization functions for user input
+ * - Never output raw user data without escaping
+ * 
+ * Usage in controller:
+ * echo View::render('<?php echo "$name"; ?>', [
+ *     'title' => 'Page Title',
+ *     'data' => $processedData,
+ *     'user' => $currentUser
+ * ]);
  */
 
 // Prevent direct access
@@ -451,20 +967,174 @@ if (!defined('ABSPATH')) {
 }
 ?>
 
-<div class="adz-view">
-    <h1><?php echo esc_html($title ?? 'Default Title'); ?></h1>
+<div class="adz-view adz-view--<?php echo esc_attr(str_replace(['/', '_'], '-', '$name')); ?>">
+    <?php if (isset($title)): ?>
+        <header class="view-header">
+            <h1 class="view-title"><?php echo esc_html($title); ?></h1>
+            
+            <?php if (isset($subtitle)): ?>
+                <p class="view-subtitle"><?php echo esc_html($subtitle); ?></p>
+            <?php endif; ?>
+        </header>
+    <?php endif; ?>
     
-    <div class="content">
+    <main class="view-content">
         <?php if (isset($content)): ?>
-            <?php echo wp_kses_post($content); ?>
-        <?php else: ?>
-            <p>Default content goes here.</p>
+            <!-- Main content area -->
+            <div class="content-area">
+                <?php echo wp_kses_post($content); ?>
+            </div>
         <?php endif; ?>
-    </div>
+        
+        <?php if (isset($items) && is_array($items)): ?>
+            <!-- List of items -->
+            <div class="items-list">
+                <?php foreach ($items as $item): ?>
+                    <div class="item">
+                        <?php if (isset($item['title'])): ?>
+                            <h3 class="item-title"><?php echo esc_html($item['title']); ?></h3>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($item['content'])): ?>
+                            <div class="item-content">
+                                <?php echo wp_kses_post($item['content']); ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($item['meta']) && is_array($item['meta'])): ?>
+                            <div class="item-meta">
+                                <?php foreach ($item['meta'] as $key => $value): ?>
+                                    <span class="meta-item">
+                                        <strong><?php echo esc_html($key); ?>:</strong>
+                                        <?php echo esc_html($value); ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($form_fields) && is_array($form_fields)): ?>
+            <!-- Dynamic form -->
+            <form class="adz-form" method="post" action="">
+                <?php wp_nonce_field('form_action', 'form_nonce'); ?>
+                
+                <?php foreach ($form_fields as $field): ?>
+                    <div class="form-field">
+                        <label for="<?php echo esc_attr($field['name']); ?>">
+                            <?php echo esc_html($field['label']); ?>
+                            <?php if (isset($field['required']) && $field['required']): ?>
+                                <span class="required">*</span>
+                            <?php endif; ?>
+                        </label>
+                        
+                        <?php switch ($field['type']): 
+                            case 'textarea': ?>
+                                <textarea 
+                                    name="<?php echo esc_attr($field['name']); ?>" 
+                                    id="<?php echo esc_attr($field['name']); ?>"
+                                    <?php echo isset($field['required']) && $field['required'] ? 'required' : ''; ?>
+                                ><?php echo esc_textarea($field['value'] ?? ''); ?></textarea>
+                                <?php break; 
+                            
+                            case 'select': ?>
+                                <select 
+                                    name="<?php echo esc_attr($field['name']); ?>" 
+                                    id="<?php echo esc_attr($field['name']); ?>"
+                                    <?php echo isset($field['required']) && $field['required'] ? 'required' : ''; ?>
+                                >
+                                    <?php if (isset($field['options']) && is_array($field['options'])): ?>
+                                        <?php foreach ($field['options'] as $value => $label): ?>
+                                            <option value="<?php echo esc_attr($value); ?>" 
+                                                <?php selected($field['value'] ?? '', $value); ?>>
+                                                <?php echo esc_html($label); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <?php break; 
+                            
+                            default: ?>
+                                <input 
+                                    type="<?php echo esc_attr($field['type'] ?? 'text'); ?>" 
+                                    name="<?php echo esc_attr($field['name']); ?>" 
+                                    id="<?php echo esc_attr($field['name']); ?>"
+                                    value="<?php echo esc_attr($field['value'] ?? ''); ?>"
+                                    <?php echo isset($field['required']) && $field['required'] ? 'required' : ''; ?>
+                                    <?php if (isset($field['placeholder'])): ?>
+                                        placeholder="<?php echo esc_attr($field['placeholder']); ?>"
+                                    <?php endif; ?>
+                                />
+                                <?php break; 
+                        endswitch; ?>
+                        
+                        <?php if (isset($field['description'])): ?>
+                            <p class="field-description"><?php echo esc_html($field['description']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+                
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">
+                        <?php echo esc_html($submit_text ?? 'Submit'); ?>
+                    </button>
+                </div>
+            </form>
+        <?php endif; ?>
+        
+        <?php if (isset($messages) && is_array($messages)): ?>
+            <!-- Messages/alerts -->
+            <div class="messages">
+                <?php foreach ($messages as $message): ?>
+                    <div class="message message--<?php echo esc_attr($message['type'] ?? 'info'); ?>">
+                        <?php echo esc_html($message['text']); ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (empty($content) && empty($items) && empty($form_fields)): ?>
+            <!-- Default content when no specific data is provided -->
+            <div class="default-content">
+                <p><?php esc_html_e('No content available.', 'textdomain'); ?></p>
+            </div>
+        <?php endif; ?>
+    </main>
+    
+    <?php if (isset($actions) && is_array($actions)): ?>
+        <!-- Action buttons -->
+        <footer class="view-actions">
+            <?php foreach ($actions as $action): ?>
+                <a href="<?php echo esc_url($action['url']); ?>" 
+                   class="button <?php echo esc_attr($action['class'] ?? 'button-secondary'); ?>"
+                   <?php if (isset($action['target'])): ?>
+                       target="<?php echo esc_attr($action['target']); ?>"
+                   <?php endif; ?>>
+                    <?php echo esc_html($action['label']); ?>
+                </a>
+            <?php endforeach; ?>
+        </footer>
+    <?php endif; ?>
 </div>
+
+<?php
+/**
+ * Action hook for adding custom content after the view
+ * 
+ * @param array $data All data passed to this view
+ */
+do_action('adz_after_view_<?php echo str_replace(['/', '-'], '_', '$name'); ?>', get_defined_vars());
+?>
 EOF
     
     log_success "View created: $view_file"
+    log_info "Usage examples:"
+    echo "  - Basic: View::render('$name', ['title' => 'Page Title']);"
+    echo "  - With items: View::render('$name', ['items' => \$dataArray]);"
+    echo "  - With form: View::render('$name', ['form_fields' => \$formConfig]);"
+    echo "  - Custom template: View::render('$name', \$data, true, 'templates/custom');"
 }
 
 # Generate Migration
@@ -564,52 +1234,273 @@ make_service() {
 
 namespace App\\Services;
 
-use Adz\\Core\\Service;
+use AdzWP\\Core\\Service;
 
 /**
  * $name - Handle business logic for ${name%Service}
+ * 
+ * Services are used to encapsulate business logic and can be injected into controllers
+ * and other services through the dependency injection container.
  */
 class $name extends Service
 {
     /**
      * Define service dependencies (optional)
      * 
+     * Services can depend on other services. The framework will automatically
+     * resolve and inject these dependencies when the service is instantiated.
+     * 
      * @return array Array of service names this service depends on
+     * 
+     * Example:
+     * return ['user', 'email', 'cache'];
      */
     protected function dependencies(): array
     {
         return [
-            // Example: 'user', 'email'
+            // Add dependency service names here
         ];
     }
 
     /**
-     * Example method - customize based on your needs
+     * Service initialization (optional)
+     * 
+     * This method is called after all dependencies have been injected.
+     * Use it to perform any initialization logic.
      */
-    public function process(): bool
+    protected function initialize(): void
     {
-        // Your business logic here
-        return true;
+        // Initialization logic here
     }
 
     /**
-     * Example method with dependency usage
+     * Example: Process data method
+     * 
+     * Services should contain business logic methods that can be called
+     * from controllers or other services.
+     * 
+     * @param array \$data The data to process
+     * @return bool Success status
      */
-    public function processWithDependency(): array
+    public function processData(array \$data): bool
     {
-        // Access other services through dependency injection
-        // Example: \$this->userService->getDisplayName(\$userId);
+        // Validate input data
+        if (empty(\$data)) {
+            return false;
+        }
+
+        // Process the data
+        foreach (\$data as \$key => \$value) {
+            // Sanitize and process each item
+            \$data[\$key] = sanitize_text_field(\$value);
+        }
+
+        // Store or handle processed data
+        return \$this->storeData(\$data);
+    }
+
+    /**
+     * Example: Get formatted data
+     * 
+     * @param int \$id Data identifier
+     * @return array|null Formatted data or null if not found
+     */
+    public function getFormattedData(int \$id): ?array
+    {
+        // Retrieve data (example using WordPress options)
+        \$data = get_option("data_{\$id}", null);
+        
+        if (!\$data) {
+            return null;
+        }
+
+        // Format and return data
+        return [
+            'id' => \$id,
+            'formatted_data' => \$this->formatData(\$data),
+            'timestamp' => current_time('timestamp'),
+        ];
+    }
+
+    /**
+     * Example: Service method with dependency usage
+     * 
+     * Access injected dependencies through their service names.
+     * Dependencies are automatically camelCased (e.g., 'user_service' becomes \$this->userService).
+     * 
+     * @param int \$userId User ID
+     * @return array Processing result
+     */
+    public function processWithDependency(int \$userId): array
+    {
+        // Example: Access injected services
+        // \$userName = \$this->userService->getDisplayName(\$userId);
+        // \$this->emailService->send(\$userId, 'Processing complete');
+        // \$this->cacheService->store("process_{\$userId}", \$result);
         
         return [
             'status' => 'success',
-            'message' => 'Processing completed'
+            'message' => 'Processing completed',
+            'user_id' => \$userId,
+            'processed_at' => current_time('mysql')
         ];
+    }
+
+    /**
+     * Example: Validation method
+     * 
+     * @param array \$input Input data to validate
+     * @return array Validation result with errors
+     */
+    public function validateInput(array \$input): array
+    {
+        \$errors = [];
+        
+        // Example validations
+        if (empty(\$input['required_field'])) {
+            \$errors['required_field'] = 'This field is required';
+        }
+        
+        if (isset(\$input['email']) && !is_email(\$input['email'])) {
+            \$errors['email'] = 'Please enter a valid email address';
+        }
+        
+        return [
+            'valid' => empty(\$errors),
+            'errors' => \$errors
+        ];
+    }
+
+    /**
+     * Private helper method for data storage
+     * 
+     * @param array \$data Data to store
+     * @return bool Success status
+     */
+    private function storeData(array \$data): bool
+    {
+        // Example: Store in WordPress options table
+        \$key = 'processed_data_' . time();
+        return update_option(\$key, \$data);
+    }
+
+    /**
+     * Private helper method for data formatting
+     * 
+     * @param mixed \$data Raw data
+     * @return array Formatted data
+     */
+    private function formatData(\$data): array
+    {
+        if (is_array(\$data)) {
+            return \$data;
+        }
+        
+        return ['value' => \$data];
     }
 }
 EOF
     
     log_success "Service created: $service_file"
-    log_info "Initialize this service in your controller with: new \\App\\Services\\$name();"
+    log_info "Usage examples:"
+    echo "  - In controller: \$service = new \\App\\Services\\$name();"
+    echo "  - With DI: \$service = \$this->container->get('$(echo "${name%Service}" | tr '[:upper:]' '[:lower:]')');"
+    echo "  - Call methods: \$result = \$service->processData(\$data);"
+}
+
+# Generate Template
+make_template() {
+    local name="$1"
+    
+    if [[ -z "$name" ]]; then
+        log_error "Template name is required"
+        echo "Usage: adz make:template <templatename>"
+        echo "Example: adz make:template admin"
+        exit 1
+    fi
+    
+    if ! is_adz_project; then
+        log_error "Not in an ADZ project directory. Run 'adz init' first."
+        exit 1
+    fi
+    
+    local template_dir="src/views/templates"
+    ensure_dir "\$template_dir"
+    
+    local template_file="\$template_dir/\$name.php"
+    
+    if [[ -f "\$template_file" ]]; then
+        log_warning "Template already exists: \$template_file"
+        read -p "Overwrite? (y/N): " -n 1 -r
+        echo
+        if [[ ! \$REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Generate template content
+    cat > "\$template_file" << 'EOF'
+<?php
+/**
+ * Template Layout
+ * 
+ * This template wraps view content and provides the overall page structure.
+ * 
+ * Available variables:
+ * - \$content: The rendered view content
+ * - \$title: Page title (if set)
+ * - \$header_content: Header content (if set)
+ * - \$footer_content: Footer content (if set)
+ * - All variables passed from the controller
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <?php if (isset(\$title)): ?>
+        <title><?php echo esc_html(\$title); ?> | <?php bloginfo('name'); ?></title>
+    <?php endif; ?>
+    
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+    <?php wp_body_open(); ?>
+    
+    <div class="site-wrapper">
+        <?php if (isset(\$header_content)): ?>
+            <header class="site-header">
+                <?php echo wp_kses_post(\$header_content); ?>
+            </header>
+        <?php endif; ?>
+        
+        <main class="site-main">
+            <div class="container">
+                <?php echo \$content; ?>
+            </div>
+        </main>
+        
+        <?php if (isset(\$footer_content)): ?>
+            <footer class="site-footer">
+                <?php echo wp_kses_post(\$footer_content); ?>
+            </footer>
+        <?php endif; ?>
+    </div>
+    
+    <?php wp_footer(); ?>
+</body>
+</html>
+EOF
+    
+    log_success "Template created: \$template_file"
+    log_info "Usage: View::render('viewname', \$data, true, 'templates/$name')"
 }
 
 # Proxy other commands to existing functionality if available
@@ -666,6 +1557,9 @@ main() {
             ;;
         "make:service")
             make_service "$2"
+            ;;
+        "make:template")
+            make_template "$2"
             ;;
         "build"|"build:assets"|"build:watch"|"build:zip"|"test"|"test:unit"|"test:coverage")
             proxy_command "$@"

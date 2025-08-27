@@ -19,10 +19,11 @@ class View extends Core {
      * @param string $template Template name
      * @param array $data Template variables
      * @param bool $cache Enable template caching
+     * @param string $layout Layout template to wrap content in
      * @return string Rendered content
      * @throws NotFoundException
      */
-    public static function render($template, $data = [], $cache = true)
+    public static function render($template, $data = [], $cache = true, $layout = 'templates/main')
     {
         $templateFile = static::findTemplate($template);
         
@@ -30,7 +31,20 @@ class View extends Core {
             throw new NotFoundException("Template '{$template}' not found");
         }
         
-        return static::renderTemplate($templateFile, $data, $cache);
+        $content = static::renderTemplate($templateFile, $data, $cache);
+        
+        // If layout is specified and template is not already a layout template
+        if ($layout && !str_starts_with($template, 'templates/')) {
+            $layoutFile = static::findTemplate($layout);
+            
+            if ($layoutFile) {
+                // Render content within the layout
+                $layoutData = array_merge($data, ['content' => $content]);
+                return static::renderTemplate($layoutFile, $layoutData, $cache);
+            }
+        }
+        
+        return $content;
     }
     
     /**
