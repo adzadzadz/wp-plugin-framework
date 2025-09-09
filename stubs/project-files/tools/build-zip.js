@@ -254,6 +254,9 @@ for (let i = 0; i < args.length; i++) {
     } else if (arg === '--version' && i + 1 < args.length) {
         options.version = args[i + 1];
         i++;
+    } else if (arg.match(/^\d+\.\d+(\.\d+)?/)) {
+        // If argument looks like a version number (e.g., "3.0.2"), use it as version
+        options.version = arg;
     }
 }
 
